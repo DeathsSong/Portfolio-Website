@@ -25,7 +25,7 @@ The existing GitHub Pages workflow supplies `BASE_PATH=/Portfolio-Website/` when
 - Projects, About me, Contact, and GitHub are actual SVG wax shapes with accessible HTML buttons aligned to their current positions.
 - Random destinations, smooth interpolation, shape deformation, and SVG metaball filtering make the lava drift and join organically.
 - Clicking a blob expands the same shape into a content surface. Smaller lava choices open project details, personal background, skills, education, and contact links.
-- Expansion grows from the clicked blob over one second, releases a burst of wax from its edges near full size, and settles into occasional rising bubbles. The particles share the metaball filter, so they stretch and separate from the parent wax. Motion off skips the transition and bubbles.
+- Expansion grows from the clicked blob over one second. Wax starts releasing 300 ms into the swell, peels away while the parent is still growing, and settles into occasional rising bubbles. The particles share the metaball filter, so they stretch and separate from the parent wax. Motion off skips the transition and bubbles.
 - Back follows the menu hierarchy; Escape does the same. Keyboard focus moves to opened content and returns to the originating blob.
 - The header, lamp, and bottom controls share the live viewport height. Menus reflow on short screens; measured content fitting keeps every control inside the lamp without hiding page overflow or cutting off the bottom.
 - Electric, Sunset, and Cosmic palettes and motion settings persist in browser storage. Reduced-motion preferences are respected by default.

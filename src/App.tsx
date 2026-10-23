@@ -35,6 +35,7 @@ const ambient = Array.from({ length: 9 }, (_, i) => ({
   r: [70, 49, 115, 30, 87, 62, 28, 23, 24][i],
 }));
 const bubbleSlots = Array.from({ length: 24 }, (_, i) => i);
+const bubbleReleaseProgress = 0.3;
 type LavaBubble = {
   born: number;
   life: number;
@@ -199,7 +200,7 @@ function useLava(
         : 1;
       host.dataset.lavaPhase = !active
         ? "flowing"
-        : progress < 0.78
+        : progress < bubbleReleaseProgress
           ? "growing"
           : progress < 1
             ? "releasing"
@@ -338,7 +339,7 @@ function useLava(
         motion &&
         expansion &&
         !expansion.released &&
-        progress >= 0.78
+        progress >= bubbleReleaseProgress
       ) {
         emitBubbles(now, 16);
         expansion.released = true;
@@ -366,7 +367,11 @@ function useLava(
           bubble.radius *
           (0.8 + Math.sin(Math.min(1, life * 4) * Math.PI) * 0.2) *
           tail;
-        const outward = seconds * bubble.speed;
+        // Give the wax an early push so it peels free during the swell, then
+        // eases into the slower drift used by the settled bubbles.
+        const outward =
+          seconds * bubble.speed +
+          (1 - Math.exp(-seconds * 5)) * bubble.radius * 3.5;
         const dx = Math.cos(bubble.angle), dy = Math.sin(bubble.angle);
         shape.setAttribute(
           "cx",
