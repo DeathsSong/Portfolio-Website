@@ -93,7 +93,19 @@
     width: 92%;
   }
   .footer-instruction {
-    max-width: 100px;
+    display: none;
+  }
+  .world-footer {
+    justify-content: center;
+  }
+  .palette-dot {
+    width: 32px;
+    height: 32px;
+  }
+}
+@media (min-width: 601px) and (max-width: 900px) {
+  .footer-copyright {
+    display: none;
   }
 }
 @media (max-height: 500px) {

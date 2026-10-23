@@ -31,6 +31,33 @@
   --wax-edge: #a968ca;
   --wax-ink: #48275f;
 }
+.lava-world[data-mood="yellow"] {
+  --water: #223c60;
+  --water-deep: #101e35;
+  --water-light: #776735;
+  --wax: #f5d847;
+  --wax-core: #fff4a3;
+  --wax-edge: #d6ac35;
+  --wax-ink: #3d2b08;
+}
+.lava-world[data-mood="aqua"] {
+  --water: #18355c;
+  --water-deep: #101a37;
+  --water-light: #265e84;
+  --wax: #56dfe0;
+  --wax-core: #b8fff0;
+  --wax-edge: #2aaeb7;
+  --wax-ink: #083641;
+}
+.lava-world[data-mood="pink"] {
+  --water: #40244f;
+  --water-deep: #20182f;
+  --water-light: #805078;
+  --wax: #f59abc;
+  --wax-core: #ffe0ed;
+  --wax-edge: #d46d9d;
+  --wax-ink: #341727;
+}
 .world-header {
   height: 108px;
   display: flex;
@@ -537,6 +564,7 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  flex-shrink: 0;
 }
 .palette-controls {
   display: flex;
@@ -563,6 +591,15 @@
 }
 .palette-cosmic > span {
   background: #d59bdf;
+}
+.palette-yellow > span {
+  background: #f5d847;
+}
+.palette-aqua > span {
+  background: #56dfe0;
+}
+.palette-pink > span {
+  background: #f59abc;
 }
 .palette-dot[aria-pressed="true"] {
   border-color: #9bb8a5;

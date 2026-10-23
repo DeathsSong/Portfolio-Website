@@ -23,7 +23,8 @@ type View =
   | "education"
   | "contact"
   | "github";
-type Mood = "electric" | "sunset" | "cosmic";
+const moods = ["electric", "sunset", "cosmic", "yellow", "aqua", "pink"] as const;
+type Mood = (typeof moods)[number];
 type InkPoint = { x: number; y: number };
 const roots = [
   { id: "projects", label: "Projects", x: 0.3, y: 0.64, phase: 0 },
@@ -664,7 +665,7 @@ function App() {
   const [view, setView] = useState<View>("home");
   const [mood, setMood] = useState<Mood>(() => {
     const saved = preference("michelle-lava-mood");
-    return ["electric", "sunset", "cosmic"].includes(saved || "")
+    return moods.includes(saved as Mood)
       ? (saved as Mood)
       : "electric";
   });
@@ -1149,7 +1150,7 @@ function App() {
             role="group"
             aria-label="Lamp color palette"
           >
-            {(["electric", "sunset", "cosmic"] as const).map((color) => (
+            {moods.map((color) => (
               <button
                 key={color}
                 aria-label={`${color} palette`}

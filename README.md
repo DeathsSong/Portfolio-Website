@@ -29,7 +29,7 @@ The existing GitHub Pages workflow supplies `BASE_PATH=/Portfolio-Website/` when
 - Expanded lava and smaller action blobs have smooth traveling lobes around a stable inner area. Labels stay still over that protected wax core. After the opening burst, bubbles move at 30% of the burst speed and arrive in pairs every five to eight seconds, with a mix of smaller droplets and larger globs.
 - Back follows the menu hierarchy; Escape does the same. Keyboard focus moves to opened content and returns to the originating blob.
 - The header, lamp, and bottom controls share the live viewport height. Menus reflow on short screens; measured content fitting keeps every control inside the lamp without hiding page overflow or cutting off the bottom.
-- Electric, Sunset, and Cosmic palettes and motion settings persist in browser storage. Reduced-motion preferences are respected by default.
+- Electric, Sunset, Cosmic, Yellow, Aqua, and Pink palettes and motion settings persist in browser storage. Reduced-motion preferences are respected by default.
 - The motion switch freezes drifting and deformation. The animation loop stops while motion is off and updates when the stage resizes or the view changes.
 
 ## Edit content
