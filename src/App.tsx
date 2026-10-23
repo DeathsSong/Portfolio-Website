@@ -34,6 +34,15 @@ const ambient = Array.from({ length: 9 }, (_, i) => ({
   y: [0.9, 0.35, 1.04, -0.22, 0.94, -0.18, 0.7, 0.7, 0.53][i],
   r: [70, 49, 115, 30, 87, 62, 28, 23, 24][i],
 }));
+const bubbleSlots = Array.from({ length: 24 }, (_, i) => i);
+type LavaBubble = {
+  born: number;
+  life: number;
+  angle: number;
+  radius: number;
+  speed: number;
+  wobble: number;
+};
 // A soft, filled arrow with rounded lobes that matches the lava controls.
 function BubblyArrow({
   direction = "up-right",
@@ -84,6 +93,12 @@ function useLava(
   motion: boolean,
   hovered: RefObject<string | null>,
 ) {
+  const activeRef = useRef(active);
+  const requestDraw = useRef(() => {});
+  useLayoutEffect(() => {
+    activeRef.current = active;
+    requestDraw.current();
+  }, [active]);
   const positions = useRef(
     roots.map((root) => ({
       x: Number(root.x),
@@ -105,6 +120,44 @@ function useLava(
       layoutChanged = true;
     let introRight = 0,
       introBottom = 0;
+    let previousActive = activeRef.current;
+    let expansion: {
+      start: number;
+      x: number;
+      y: number;
+      rx: number;
+      ry: number;
+      released: boolean;
+    } | null = null;
+    const bubbles: (LavaBubble | null)[] = bubbleSlots.map(() => null);
+    const bubbleShapes = bubbleSlots.map((i) =>
+      host.querySelector<SVGEllipseElement>(`#release-${i}`),
+    );
+    let nextBubble =
+      previousActive && motion ? performance.now() + 2000 : Infinity;
+    // Start just inside the diagonal edges, where there is room for wax to
+    // stretch into a neck, separate, and float away even on narrow screens.
+    const emitBubbles = (now: number, count: number) => {
+      const scale = Math.max(0.62, Math.min(width / 900, height / 600, 1.15));
+      const angles = [-2.5, -2.15, -1, -0.65, 0.65, 1, 2.15, 2.5];
+      for (let i = 0; i < count; i++) {
+        const slot = bubbles.findIndex((bubble) => !bubble);
+        if (slot < 0) break;
+        bubbles[slot] = {
+          born: now + (count > 1 ? i * 22 : 0),
+          life: 2300 + Math.random() * 1100,
+          angle:
+            angles[
+              count > 1
+                ? i % angles.length
+                : Math.floor(Math.random() * angles.length)
+            ] + (Math.random() - 0.5) * 0.18,
+          radius: (20 + Math.random() * 13) * scale,
+          speed: (39 + Math.random() * 23) * scale,
+          wobble: Math.random() * Math.PI * 2,
+        };
+      }
+    };
     const measure = () => {
       width = host.clientWidth;
       height = host.clientHeight;
@@ -120,8 +173,37 @@ function useLava(
     const observer = new ResizeObserver(measure);
     observer.observe(host);
     const tick = (now: number) => {
+      const active = activeRef.current;
       const dt = Math.min(now - (last || now - 16), 40);
       last = now;
+      if (active !== previousActive) {
+        const selected =
+          positions.current[roots.findIndex((root) => root.id === active)];
+        expansion =
+          selected && motion
+            ? {
+                start: now,
+                x: selected.x,
+                y: selected.y,
+                rx: selected.rx,
+                ry: selected.ry,
+                released: false,
+              }
+            : null;
+        bubbles.fill(null);
+        nextBubble = Infinity;
+        previousActive = active;
+      }
+      const progress = expansion
+        ? Math.min(1, (now - expansion.start) / 1000)
+        : 1;
+      host.dataset.lavaPhase = !active
+        ? "flowing"
+        : progress < 0.78
+          ? "growing"
+          : progress < 1
+            ? "releasing"
+            : "settled";
       const mobile = width < 600;
       const compact = height < 500;
       const landscape = width >= 600 && height < 440;
@@ -193,8 +275,15 @@ function useLava(
           motion && !layoutChanged
             ? 1 - Math.exp(-dt / (active ? 185 : 2200))
             : 1;
-        p.x += (gx - p.x) * follow;
-        p.y += (gy - p.y) * follow;
+        const opening = isActive && progress < 1 ? expansion : null;
+        const eased = 1 - Math.pow(1 - progress, 3);
+        if (opening) {
+          p.x = opening.x + (gx - opening.x) * eased;
+          p.y = opening.y + (gy - opening.y) * eased;
+        } else {
+          p.x += (gx - p.x) * follow;
+          p.y += (gy - p.y) * follow;
+        }
         if (!active) {
           p.x = Math.max(marginX, Math.min(1 - marginX, p.x));
           p.y = Math.max(marginY, Math.min(1 - marginY, p.y));
@@ -218,8 +307,19 @@ function useLava(
         const grow = motion && !layoutChanged ? 1 - Math.exp(-dt / 185) : 1;
         const labelRx = mobile ? (i === 3 ? 42 : compact ? 48 : 56) : 0;
         const labelRy = mobile ? (i === 3 ? 40 : compact ? 46 : 52) : 0;
-        p.rx += ((active ? goalRx : Math.max(goalRx, labelRx)) - p.rx) * grow;
-        p.ry += ((active ? goalRy : Math.max(goalRy, labelRy)) - p.ry) * grow;
+        if (opening) {
+          const swell =
+            progress > 0.6
+              ? Math.sin(((progress - 0.6) / 0.4) * Math.PI)
+              : 0;
+          p.rx =
+            (opening.rx + (goalRx - opening.rx) * eased) * (1 + swell * 0.035);
+          p.ry =
+            (opening.ry + (goalRy - opening.ry) * eased) * (1 - swell * 0.018);
+        } else {
+          p.rx += ((active ? goalRx : Math.max(goalRx, labelRx)) - p.rx) * grow;
+          p.ry += ((active ? goalRy : Math.max(goalRy, labelRy)) - p.ry) * grow;
+        }
         const shape = host.querySelector(`#wax-${root.id}`);
         shape?.setAttribute("cx", String(p.x * width));
         shape?.setAttribute("cy", String(p.y * height));
@@ -233,6 +333,69 @@ function useLava(
           hit.style.height = `${p.ry * 1.9}px`;
         }
       });
+      if (
+        active &&
+        motion &&
+        expansion &&
+        !expansion.released &&
+        progress >= 0.78
+      ) {
+        emitBubbles(now, 16);
+        expansion.released = true;
+        nextBubble = now + 3200;
+      } else if (active && motion && now >= nextBubble) {
+        emitBubbles(now, 1);
+        nextBubble = now + 1400 + Math.random() * 1400;
+      }
+      const selected =
+        positions.current[roots.findIndex((root) => root.id === active)];
+      bubbleShapes.forEach((shape, i) => {
+        const bubble = bubbles[i];
+        const age = bubble ? now - bubble.born : -1;
+        if (!shape) return;
+        if (!selected || !motion || !bubble || age < 0 || age >= bubble.life) {
+          shape.setAttribute("rx", "0");
+          shape.setAttribute("ry", "0");
+          if (bubble && age >= bubble.life) bubbles[i] = null;
+          return;
+        }
+        const seconds = age / 1000;
+        const life = age / bubble.life;
+        const tail = Math.min(1, (1 - life) / 0.32);
+        const radius =
+          bubble.radius *
+          (0.8 + Math.sin(Math.min(1, life * 4) * Math.PI) * 0.2) *
+          tail;
+        const outward = seconds * bubble.speed;
+        const dx = Math.cos(bubble.angle), dy = Math.sin(bubble.angle);
+        shape.setAttribute(
+          "cx",
+          String(
+            selected.x * width +
+              dx * (selected.rx * 0.94 + outward) +
+              Math.sin(seconds * 2 + bubble.wobble) * seconds * 6,
+          ),
+        );
+        shape.setAttribute(
+          "cy",
+          String(
+            selected.y * height +
+              dy * (selected.ry * 0.94 + outward) -
+              seconds * seconds * 8,
+          ),
+        );
+        shape.setAttribute(
+          "rx",
+          String(radius * (1 + Math.sin(seconds * 3 + bubble.wobble) * 0.14)),
+        );
+        shape.setAttribute(
+          "ry",
+          String(radius * (1.1 + Math.cos(seconds * 2 + bubble.wobble) * 0.18)),
+        );
+      });
+      host.dataset.lavaBubbles = String(
+        bubbles.filter((bubble) => bubble && now >= bubble.born).length,
+      );
       layoutChanged = false;
       ambient.forEach((blob, i) => {
         const t = motion ? now * 0.00013 + i * 1.8 : i * 1.8;
@@ -257,13 +420,20 @@ function useLava(
       });
       if (motion) frame = requestAnimationFrame(tick);
     };
+    requestDraw.current = () => {
+      if (!motion) {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(tick);
+      }
+    };
     measure();
     if (motion) frame = requestAnimationFrame(tick);
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
+      requestDraw.current = () => {};
     };
-  }, [stage, active, motion, hovered]);
+  }, [stage, motion, hovered]);
 }
 
 function usePanelFit(panel: RefObject<HTMLDivElement | null>, view: View) {
@@ -485,6 +655,17 @@ function App() {
                 rx="0"
                 ry="0"
                 className="nav-wax"
+              />
+            ))}
+            {bubbleSlots.map((i) => (
+              <ellipse
+                id={`release-${i}`}
+                key={`release-${i}`}
+                className="release-wax"
+                cx="0"
+                cy="0"
+                rx="0"
+                ry="0"
               />
             ))}
           </g>

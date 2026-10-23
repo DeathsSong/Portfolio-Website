@@ -62,7 +62,7 @@
 .panel-content {
   flex: none;
   padding: 10px 14px;
-  animation: content-arrive 0.9s both;
+  animation: content-arrive 1.15s both;
 }
 .panel-anaconda .panel-content,
 .panel-trivia .panel-content,
