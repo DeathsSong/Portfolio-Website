@@ -998,8 +998,100 @@
   }
 }
 /* Keep expanded wax menus whole instead of clipping their smaller globs. */
-.lava-panel { max-height:84%; }
-.stage-caption { background:#031d2aaa; padding:8px 12px; border-radius:24px; backdrop-filter:blur(6px); }
-.lava-panel { animation-duration:.9s; }
-.panel-anaconda,.panel-trivia,.panel-story,.panel-skills,.panel-education { animation-duration:.4s; }
-@keyframes panel-arrive { 0%,60% { opacity:0; transform:translate(-50%,-47%) scale(.95); }100% { opacity:1; transform:translate(-50%,-50%) scale(1); } }
+.lava-panel {
+  max-height: 84%;
+}
+.stage-caption {
+  background: #031d2aaa;
+  padding: 8px 12px;
+  border-radius: 24px;
+  backdrop-filter: blur(6px);
+}
+.lava-panel {
+  animation-duration: 0.9s;
+}
+.panel-anaconda,
+.panel-trivia,
+.panel-story,
+.panel-skills,
+.panel-education {
+  animation-duration: 0.4s;
+}
+@keyframes panel-arrive {
+  0%,
+  60% {
+    opacity: 0;
+    transform: translate(-50%, -47%) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+/* Soft, filled arrowheads echo the rounded edges of the wax. */
+.bubbly-arrow {
+  flex-shrink: 0;
+  overflow: visible;
+}
+.glob-hit > .bubbly-arrow {
+  width: 27px;
+  height: 27px;
+  margin-top: 8px;
+}
+.glob-github > .bubbly-arrow {
+  width: 22px;
+  height: 22px;
+}
+.glob-hit:hover > .bubbly-arrow {
+  transform: translate(2px, -2px) scale(1.08);
+}
+.action-label span .bubbly-arrow {
+  width: 16px;
+  height: 16px;
+}
+.flow-back > .arrow-back {
+  width: 18px;
+  height: 18px;
+  transform: rotate(-135deg);
+}
+.about-globs {
+  flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+  .glob-hit > .bubbly-arrow {
+    width: 23px;
+    height: 23px;
+  }
+  .glob-github > .bubbly-arrow {
+    width: 20px;
+    height: 20px;
+  }
+  .flow-back > .arrow-back {
+    width: 16px;
+    height: 16px;
+  }
+  .about-globs .lava-action:nth-child(n + 3) {
+    margin-top: -8px;
+  }
+}
+.about-globs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 650px;
+  margin-inline: auto;
+}
+.about-globs .lava-action {
+  width: 100%;
+  min-height: 135px;
+  padding: 15px 8px;
+}
+@media (max-width: 600px) {
+  .about-globs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .about-globs .lava-action {
+    min-height: 115px;
+    padding: 14px 8px;
+  }
+}

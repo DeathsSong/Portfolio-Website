@@ -3,7 +3,7 @@ export const portfolio = {
   github: "https://github.com/DeathsSong",
   linkedin: "https://www.linkedin.com/in/michelleloudenclos",
   email: "michelle.sherrie@yahoo.com",
-  resume: "",
+  resume: `${import.meta.env.BASE_URL}resume.pdf`,
   skills: [
     "React",
     "JavaScript",

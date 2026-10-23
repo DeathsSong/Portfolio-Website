@@ -1,13 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
-import {
-  FiArrowLeft,
-  FiArrowUpRight,
-  FiGithub,
-  FiLinkedin,
-  FiMail,
-  FiPause,
-  FiPlay,
-} from "react-icons/fi";
+import { FiGithub, FiLinkedin, FiMail, FiPause, FiPlay } from "react-icons/fi";
 import { portfolio, projects } from "./content";
 import certificate from "./assets/general-assembly-certificate.png";
 import "./App.css";
@@ -35,6 +27,27 @@ const ambient = Array.from({ length: 9 }, (_, i) => ({
   y: [0.9, 0.35, 1.04, -0.22, 0.94, -0.18, 0.7, 0.7, 0.53][i],
   r: [70, 49, 115, 30, 87, 62, 28, 23, 24][i],
 }));
+// A soft, filled arrow with rounded lobes that matches the lava controls.
+function BubblyArrow({
+  direction = "up-right",
+}: {
+  direction?: "up-right" | "left";
+}) {
+  return (
+    <svg
+      className={`bubbly-arrow${direction === "left" ? " arrow-back" : ""}`}
+      viewBox="0 0 32 32"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        fill="currentColor"
+        d="M7.1 27.2C4.1 27.2 2.6 23.8 4.8 21.5L16.4 9.8L10.2 10.1C5.8 10.3 5.5 3.7 9.9 3.5L23.2 2.9C27 2.7 29.2 5 29 8.7L28.4 22C28.2 26.4 21.6 26.2 21.8 21.7L22.1 15.6L10.5 26.2C9.5 27.1 8.3 27.6 7.1 27.2Z"
+      />
+    </svg>
+  );
+}
+
 function preference(key: string) {
   try {
     return localStorage.getItem(key);
@@ -141,7 +154,8 @@ function useLava(
         const t = motion ? now * 0.00055 + root.phase : root.phase;
         const hover = hovered.current === root.id && !active ? 1.1 : 1;
         const goalRx = isActive
-          ? Math.min(width * (mobile ? 0.495 : 0.42), 470) * (1 + Math.sin(t) * 0.015)
+          ? Math.min(width * (mobile ? 0.495 : 0.42), 470) *
+            (1 + Math.sin(t) * 0.015)
           : active
             ? 6
             : radius * hover * (i === 3 ? 0.79 : 1) * (1 + Math.sin(t) * 0.12);
@@ -432,7 +446,7 @@ function App() {
               }}
             >
               <span>{root.label}</span>
-              <FiArrowUpRight />
+              <BubblyArrow />
               <small>
                 {root.id === "projects"
                   ? "THINGS I’VE MADE"
@@ -449,7 +463,7 @@ function App() {
           <>
             <button className="flow-back" onClick={back}>
               <span aria-hidden="true" />
-              <FiArrowLeft />{" "}
+              <BubblyArrow direction="left" />{" "}
               {["anaconda", "trivia", "story", "skills", "education"].includes(
                 view,
               )
@@ -484,14 +498,14 @@ function App() {
                       <span className="sub-index">01 / BROWSER GAME</span>
                       <strong>Anaconda</strong>
                       <span>
-                        One more bite. <FiArrowUpRight />
+                        One more bite. <BubblyArrow />
                       </span>
                     </LavaAction>
                     <LavaAction onClick={() => setView("trivia")}>
                       <span className="sub-index">02 / WEB APP</span>
                       <strong>Trivia Trove</strong>
                       <span>
-                        Stay curious. <FiArrowUpRight />
+                        Stay curious. <BubblyArrow />
                       </span>
                     </LavaAction>
                   </div>
@@ -509,7 +523,7 @@ function App() {
                   </div>
                   <div className="sub-globs compact-globs">
                     <LavaAction href={project.live}>
-                      <FiArrowUpRight />
+                      <BubblyArrow />
                       <strong>
                         {view === "anaconda" ? "Play the game" : "Try the app"}
                       </strong>
@@ -533,19 +547,25 @@ function App() {
                     <LavaAction onClick={() => setView("story")}>
                       <strong>My story</strong>
                       <span>
-                        A little about me <FiArrowUpRight />
+                        A little about me <BubblyArrow />
                       </span>
                     </LavaAction>
                     <LavaAction onClick={() => setView("skills")}>
                       <strong>My toolkit</strong>
                       <span>
-                        What I build with <FiArrowUpRight />
+                        What I build with <BubblyArrow />
                       </span>
                     </LavaAction>
                     <LavaAction onClick={() => setView("education")}>
                       <strong>Education</strong>
                       <span>
-                        Where it started <FiArrowUpRight />
+                        Where it started <BubblyArrow />
+                      </span>
+                    </LavaAction>
+                    <LavaAction href={portfolio.resume}>
+                      <strong>Résumé</strong>
+                      <span>
+                        View the PDF <BubblyArrow />
                       </span>
                     </LavaAction>
                   </div>
@@ -607,7 +627,7 @@ function App() {
                       alt="General Assembly software engineering certificate for Michelle Loudenclos"
                     />
                     <span>
-                      Open the certificate <FiArrowUpRight />
+                      Open the certificate <BubblyArrow />
                     </span>
                   </a>
                 </>
@@ -647,7 +667,7 @@ function App() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      My résumé <FiArrowUpRight />
+                      My résumé <BubblyArrow />
                     </a>
                   )}
                 </>
@@ -670,7 +690,7 @@ function App() {
                       <FiGithub />
                       <strong>DeathsSong</strong>
                       <span>
-                        Find me on GitHub <FiArrowUpRight />
+                        Find me on GitHub <BubblyArrow />
                       </span>
                     </LavaAction>
                   </div>

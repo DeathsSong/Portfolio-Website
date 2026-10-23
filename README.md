@@ -33,12 +33,8 @@ The existing GitHub Pages workflow supplies `BASE_PATH=/Portfolio-Website/` when
 
 Update `src/content.ts` for projects, skills, email, and social links. Contact links use `michelle.sherrie@yahoo.com` and open the visitor’s mail application.
 
-When the résumé is ready, export a text-selectable PDF, save it as `public/resume.pdf`, and set:
+The résumé is served from `public/resume.pdf` and linked from the About and Contact lava menus. Its URL uses Vite’s `BASE_URL`, so it also works under the GitHub Pages repository path. Replace this file when the résumé changes; the existing links will keep working. The supplied one-page PDF is preserved byte-for-byte.
 
-```ts
-resume: `${import.meta.env.BASE_URL}resume.pdf`,
-```
-
-The résumé link remains hidden until supplied. The original General Assembly certificate is retained.
+The original General Assembly certificate is retained.
 
 Fonts are self-hosted Shrikhand and DM Sans, licensed under the SIL Open Font License; licenses are in `src/assets/fonts/`. There are no analytics or remote font requests.
