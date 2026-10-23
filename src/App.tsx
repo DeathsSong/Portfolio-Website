@@ -7,6 +7,7 @@ import {
 } from "react";
 import { FiGithub, FiLinkedin, FiMail, FiPause, FiPlay } from "react-icons/fi";
 import { portfolio, projects } from "./content";
+import { lavaOutline } from "./lava-shape";
 import certificate from "./assets/general-assembly-certificate.png";
 import "./App.css";
 import "./viewport.css";
@@ -23,6 +24,7 @@ type View =
   | "contact"
   | "github";
 type Mood = "electric" | "sunset" | "cosmic";
+type InkPoint = { x: number; y: number };
 const roots = [
   { id: "projects", label: "Projects", x: 0.3, y: 0.64, phase: 0 },
   { id: "about", label: "About me", x: 0.68, y: 0.32, phase: 1.7 },
@@ -43,6 +45,7 @@ type LavaBubble = {
   radius: number;
   speed: number;
   wobble: number;
+  pace: number;
 };
 // A soft, filled arrow with rounded lobes that matches the lava controls.
 function BubblyArrow({
@@ -93,6 +96,7 @@ function useLava(
   active: string | null,
   motion: boolean,
   hovered: RefObject<string | null>,
+  ink: RefObject<InkPoint[]>,
 ) {
   const activeRef = useRef(active);
   const requestDraw = useRef(() => {});
@@ -135,10 +139,10 @@ function useLava(
       host.querySelector<SVGEllipseElement>(`#release-${i}`),
     );
     let nextBubble =
-      previousActive && motion ? performance.now() + 2000 : Infinity;
+      previousActive && motion ? performance.now() + 5000 : Infinity;
     // Start just inside the diagonal edges, where there is room for wax to
     // stretch into a neck, separate, and float away even on narrow screens.
-    const emitBubbles = (now: number, count: number) => {
+    const emitBubbles = (now: number, count: number, pace = 1) => {
       const scale = Math.max(0.62, Math.min(width / 900, height / 600, 1.15));
       const angles = [-2.5, -2.15, -1, -0.65, 0.65, 1, 2.15, 2.5];
       for (let i = 0; i < count; i++) {
@@ -146,7 +150,7 @@ function useLava(
         if (slot < 0) break;
         bubbles[slot] = {
           born: now + (count > 1 ? i * 22 : 0),
-          life: 2300 + Math.random() * 1100,
+          life: (2300 + Math.random() * 1100) / pace,
           angle:
             angles[
               count > 1
@@ -156,6 +160,7 @@ function useLava(
           radius: (20 + Math.random() * 13) * scale,
           speed: (39 + Math.random() * 23) * scale,
           wobble: Math.random() * Math.PI * 2,
+          pace,
         };
       }
     };
@@ -291,13 +296,13 @@ function useLava(
         }
         const t = motion ? now * 0.00055 + root.phase : root.phase;
         const hover = hovered.current === root.id && !active ? 1.1 : 1;
-        const goalRx = isActive
+        let goalRx = isActive
           ? Math.min(width * (mobile ? 0.495 : 0.44), 500) *
             (1 + Math.sin(t) * 0.015)
           : active
             ? 6
             : radius * hover * (i === 3 ? 0.79 : 1) * (1 + Math.sin(t) * 0.12);
-        const goalRy = isActive
+        let goalRy = isActive
           ? height * 0.45 * (1 + Math.cos(t) * 0.015)
           : active
             ? 7
@@ -305,6 +310,22 @@ function useLava(
               hover *
               (i === 3 ? 0.8 : 1) *
               (1 + Math.cos(t * 1.2) * 0.14);
+        if (isActive) {
+          // Protect every text line with a small margin, even in short views.
+          const safeScale = ink.current.reduce(
+            (safe, point) =>
+              Math.max(
+                safe,
+                Math.hypot(
+                  (Math.abs(point.x - gx) * width + 6) / goalRx,
+                  (Math.abs(point.y - gy) * height + 6) / goalRy,
+                ),
+              ),
+            1,
+          );
+          goalRx *= safeScale;
+          goalRy *= safeScale;
+        }
         const grow = motion && !layoutChanged ? 1 - Math.exp(-dt / 185) : 1;
         const labelRx = mobile ? (i === 3 ? 42 : compact ? 48 : 56) : 0;
         const labelRy = mobile ? (i === 3 ? 40 : compact ? 46 : 52) : 0;
@@ -320,6 +341,21 @@ function useLava(
         } else {
           p.rx += ((active ? goalRx : Math.max(goalRx, labelRx)) - p.rx) * grow;
           p.ry += ((active ? goalRy : Math.max(goalRy, labelRy)) - p.ry) * grow;
+        }
+        if (isActive && (!opening || progress >= 0.65)) {
+          const cover = ink.current.reduce(
+            (safe, point) =>
+              Math.max(
+                safe,
+                Math.hypot(
+                  (Math.abs(point.x - p.x) * width + 4) / p.rx,
+                  (Math.abs(point.y - p.y) * height + 4) / p.ry,
+                ),
+              ),
+            1,
+          );
+          p.rx *= cover;
+          p.ry *= cover;
         }
         const shape = host.querySelector(`#wax-${root.id}`);
         shape?.setAttribute("cx", String(p.x * width));
@@ -343,13 +379,41 @@ function useLava(
       ) {
         emitBubbles(now, 16);
         expansion.released = true;
-        nextBubble = now + 3200;
+        nextBubble = now + 6200;
       } else if (active && motion && now >= nextBubble) {
-        emitBubbles(now, 1);
-        nextBubble = now + 1400 + Math.random() * 1400;
+        emitBubbles(now, 1, 0.3);
+        nextBubble = now + 5000 + Math.random() * 3000;
       }
       const selected =
         positions.current[roots.findIndex((root) => root.id === active)];
+      const edge = host.querySelector("#expanded-edge");
+      edge?.setAttribute(
+        "d",
+        selected
+          ? lavaOutline(
+              selected.x * width,
+              selected.y * height,
+              selected.rx,
+              selected.ry,
+              motion ? now * 0.001 : 0,
+              Math.min(1, progress * 1.5),
+            )
+          : "",
+      );
+      host.querySelectorAll(".action-ripple").forEach((shape, i) => {
+        const coreScale = Number(shape.getAttribute("data-core-scale")) || 1;
+        shape.setAttribute(
+          "d",
+          lavaOutline(
+            100,
+            80,
+            94 * coreScale,
+            72 * coreScale,
+            (motion ? now * 0.001 : 0) + i * 2.1,
+            1.8,
+          ),
+        );
+      });
       bubbleShapes.forEach((shape, i) => {
         const bubble = bubbles[i];
         const age = bubble ? now - bubble.born : -1;
@@ -360,15 +424,15 @@ function useLava(
           if (bubble && age >= bubble.life) bubbles[i] = null;
           return;
         }
-        const seconds = age / 1000;
+        const seconds = (age / 1000) * bubble.pace;
         const life = age / bubble.life;
         const tail = Math.min(1, (1 - life) / 0.32);
         const radius =
           bubble.radius *
           (0.8 + Math.sin(Math.min(1, life * 4) * Math.PI) * 0.2) *
           tail;
-        // Give the wax an early push so it peels free during the swell, then
-        // eases into the slower drift used by the settled bubbles.
+        // Burst particles retain their opening push. Settled particles follow
+        // the same fluid path at a slower pace, including their separation.
         const outward =
           seconds * bubble.speed +
           (1 - Math.exp(-seconds * 5)) * bubble.radius * 3.5;
@@ -438,14 +502,24 @@ function useLava(
       observer.disconnect();
       requestDraw.current = () => {};
     };
-  }, [stage, motion, hovered]);
+  }, [stage, motion, hovered, ink]);
+  return requestDraw;
 }
 
-function usePanelFit(panel: RefObject<HTMLDivElement | null>, view: View) {
+function usePanelFit(
+  panel: RefObject<HTMLDivElement | null>,
+  view: View,
+  stage: RefObject<HTMLDivElement | null>,
+  ink: RefObject<InkPoint[]>,
+  redraw: RefObject<() => void>,
+) {
   useLayoutEffect(() => {
     const frame = panel.current;
     const content = frame?.querySelector<HTMLElement>(".panel-content");
-    if (!frame || !content) return;
+    if (!frame || !content) {
+      ink.current = [];
+      return;
+    }
     let disposed = false;
     const fit = () => {
       if (disposed || !frame.clientWidth || !frame.clientHeight) return;
@@ -457,6 +531,68 @@ function usePanelFit(panel: RefObject<HTMLDivElement | null>, view: View) {
       );
       content.style.zoom = String(scale);
       frame.dataset.fit = scale.toFixed(3);
+      for (const button of content.querySelectorAll(".lava-action")) {
+        const bounds = button.getBoundingClientRect();
+        let coreScale = 1;
+        for (const label of button.querySelectorAll(
+          ".action-label strong, .action-label > span, .action-label > svg",
+        )) {
+          const rect = label.getBoundingClientRect();
+          for (const x of [rect.left, rect.right]) {
+            for (const y of [rect.top, rect.bottom]) {
+              coreScale = Math.max(
+                coreScale,
+                Math.hypot(
+                  (Math.abs(x - bounds.left - bounds.width / 2) + 3) / (bounds.width * 0.47),
+                  (Math.abs(y - bounds.top - bounds.height / 2) + 3) / (bounds.height * 0.45),
+                ),
+              );
+            }
+          }
+        }
+        const core = button.querySelector(".action-wax ellipse");
+        core?.setAttribute("rx", String(94 * coreScale));
+        core?.setAttribute("ry", String(72 * coreScale));
+        button.querySelector(".action-ripple")?.setAttribute("data-core-scale", String(coreScale));
+      }
+      const host = stage.current;
+      if (!host) return;
+      // Read the actual text lines, undoing only the entrance transform. Their
+      // resting positions define the inner wax that must never move away.
+      const bounds = content.getBoundingClientRect();
+      const frameBounds = frame.getBoundingClientRect();
+      const stageBounds = host.getBoundingClientRect();
+      const quietWidth = content.offsetWidth * scale;
+      const quietHeight = content.offsetHeight * scale;
+      const transformScale = bounds.width / quietWidth || 1;
+      const left = frameBounds.left + (frameBounds.width - quietWidth) / 2;
+      const top = frameBounds.top + (frameBounds.height - quietHeight) / 2;
+      const points: InkPoint[] = [];
+      const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        if (!node.textContent?.trim() || node.parentElement?.closest("svg"))
+          continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        for (const rect of range.getClientRects()) {
+          for (const x of [rect.left, rect.right]) {
+            for (const y of [rect.top, rect.bottom]) {
+              points.push({
+                x:
+                  (left + (x - bounds.left) / transformScale - stageBounds.left - host.clientLeft) /
+                  host.clientWidth,
+                y:
+                  (top + (y - bounds.top) / transformScale - stageBounds.top - host.clientTop) /
+                  host.clientHeight,
+              });
+            }
+          }
+        }
+      }
+      ink.current = points;
+      frame.dataset.inkPoints = String(points.length);
+      redraw.current();
     };
     const observer = new ResizeObserver(fit);
     observer.observe(frame);
@@ -467,7 +603,7 @@ function usePanelFit(panel: RefObject<HTMLDivElement | null>, view: View) {
       disposed = true;
       observer.disconnect();
     };
-  }, [panel, view]);
+  }, [panel, view, stage, ink, redraw]);
 }
 
 function LavaAction({
@@ -483,7 +619,21 @@ function LavaAction({
 }) {
   const content = (
     <>
-      <span className="action-wax" aria-hidden="true" />
+      <svg
+        className="action-wax"
+        viewBox="0 0 200 160"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <g fill="url(#action-molten)">
+          <ellipse cx="100" cy="80" rx="94" ry="72" />
+          <path
+            className="action-ripple"
+            d={lavaOutline(100, 80, 94, 72, 0, 1.8)}
+          />
+        </g>
+      </svg>
       <span className="action-label">{children}</span>
     </>
   );
@@ -521,9 +671,10 @@ function App() {
   const hovered = useRef<string | null>(null);
   const panel = useRef<HTMLDivElement>(null);
   const lastRoot = useRef<string | null>(null);
+  const ink = useRef<InkPoint[]>([]);
   const active = rootFor(view);
-  useLava(stage, active, motion, hovered);
-  usePanelFit(panel, view);
+  const redrawLava = useLava(stage, active, motion, hovered, ink);
+  usePanelFit(panel, view, stage, ink, redrawLava);
   useEffect(() => {
     savePreference("michelle-lava-mood", mood);
     savePreference("michelle-motion", motion ? "on" : "off");
@@ -608,6 +759,10 @@ function App() {
               <stop offset=".6" stopColor="var(--wax)" />
               <stop offset="1" stopColor="var(--wax-edge)" />
             </radialGradient>
+            <radialGradient id="action-molten" cx=".35" cy=".25" r=".9">
+              <stop offset="0" stopColor="var(--wax)" />
+              <stop offset="1" stopColor="var(--wax-edge)" />
+            </radialGradient>
             <filter
               id="liquid-goo"
               x="-30%"
@@ -662,6 +817,7 @@ function App() {
                 className="nav-wax"
               />
             ))}
+            <path id="expanded-edge" d="" />
             {bubbleSlots.map((i) => (
               <ellipse
                 id={`release-${i}`}
