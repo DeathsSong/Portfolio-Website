@@ -1,0 +1,431 @@
+/* The header, liquid, and controls share the visible viewport. None of these
+   rows has a fixed minimum that can push the footer below the screen. */
+.lava-world {
+  height: 100svh;
+  height: 100dvh;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding-block: env(safe-area-inset-top) env(safe-area-inset-bottom);
+}
+.world-header {
+  height: clamp(48px, 11dvh, 94px);
+  min-height: 0;
+  margin: 0 auto;
+}
+.world-footer {
+  height: clamp(44px, 8dvh, 64px);
+  min-height: 0;
+  margin: 0 auto;
+  flex-wrap: nowrap;
+  padding-block: 6px;
+}
+.lava-stage {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  margin: 0 auto;
+  container-type: size;
+}
+.stage-intro {
+  top: clamp(16px, 5cqh, 44px);
+  left: clamp(20px, 4cqw, 52px);
+}
+.stage-intro h1 {
+  font-size: clamp(28px, min(10cqh, 11vw), 62px);
+}
+.stage-intro > p:last-child {
+  max-width: 240px;
+}
+.glob-hit > span {
+  font-size: clamp(16px, min(4cqh, 5.4cqw), 29px);
+}
+.glob-github > span {
+  font-size: clamp(15px, min(3.5cqh, 5cqw), 25px);
+}
+
+/* Reserve a real content frame between the back control and the bottom of the
+   lamp. The inner content can be measured without clipping or scroll masking. */
+.lava-panel {
+  top: max(54px, 10cqh);
+  bottom: max(14px, 3cqh);
+  width: min(700px, 80%);
+  max-height: none;
+  padding: 0;
+  overflow: visible;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: none;
+}
+.panel-content {
+  flex: none;
+  padding: 10px 14px;
+  animation: content-arrive 0.9s both;
+}
+.panel-anaconda .panel-content,
+.panel-trivia .panel-content,
+.panel-story .panel-content,
+.panel-skills .panel-content,
+.panel-education .panel-content {
+  animation-duration: 0.4s;
+}
+.certificate-link img {
+  max-height: min(220px, 34cqh);
+}
+@keyframes content-arrive {
+  0%,
+  60% {
+    opacity: 0;
+    transform: translateY(9px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 600px) {
+  .world-header {
+    height: clamp(48px, 9dvh, 76px);
+  }
+  .lava-panel {
+    width: 92%;
+  }
+  .footer-instruction {
+    max-width: 100px;
+  }
+}
+@media (max-height: 500px) {
+  .world-header {
+    height: 48px;
+  }
+  .world-footer {
+    height: 44px;
+  }
+  .world-brand {
+    font-size: 27px;
+  }
+  .identity {
+    gap: 5px;
+  }
+  .header-note {
+    font-size: 6px;
+  }
+}
+
+/* Reflow the content first, before the measured fit safeguard is needed. */
+@container (max-height:600px) {
+  .project-globs {
+    flex-direction: row;
+  }
+  .project-globs .lava-action {
+    width: 45%;
+    min-width: 0;
+    min-height: 115px;
+    padding: 15px 9px;
+  }
+  .project-globs .action-label strong {
+    font-size: 19px;
+  }
+}
+@container (max-height:520px) {
+  .stage-intro .eyebrow {
+    font-size: 6px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .stage-intro h1 {
+    margin-bottom: 12px;
+  }
+  .stage-intro > p:last-child {
+    font-size: 10px;
+    line-height: 1.6;
+  }
+  .lava-panel h2 {
+    font-size: clamp(25px, 6cqh, 38px);
+    margin-bottom: 12px;
+  }
+  .lava-panel .eyebrow {
+    margin-bottom: 10px;
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .panel-intro,
+  .detail-copy {
+    font-size: 13px;
+    line-height: 1.55;
+    margin-bottom: 14px;
+  }
+  .secondary-copy {
+    font-size: 12px;
+  }
+  .sub-globs {
+    gap: 10px;
+    padding-block: 5px 9px;
+  }
+  .action-label {
+    gap: 7px;
+  }
+  .lava-action,
+  .project-globs .lava-action {
+    min-height: 105px;
+    padding: 13px 9px;
+  }
+  .about-globs .lava-action {
+    min-height: 95px;
+    padding: 12px 7px;
+  }
+  .contact-globs {
+    flex-wrap: nowrap;
+  }
+  .contact-globs .lava-action {
+    flex: 1;
+    min-width: 0;
+    min-height: 90px;
+    padding: 10px 5px;
+  }
+  .contact-globs .lava-action:last-child {
+    margin-top: 0;
+  }
+  .contact-globs .action-label strong {
+    font-size: 16px;
+  }
+  .compact-globs .lava-action {
+    min-height: 100px;
+  }
+  .skill-cloud {
+    margin-block: 12px;
+  }
+  .big-cloud {
+    gap: 10px;
+  }
+  .big-cloud > span {
+    font-size: 14px;
+    padding: 12px 17px;
+  }
+  .email-address {
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  .certificate-link img {
+    max-height: 30cqh;
+  }
+}
+@container (max-height:440px) {
+  .stage-caption,
+  .tank-mark {
+    display: none;
+  }
+  .glob-hit > small {
+    font-size: 4.5px;
+    letter-spacing: 0.65px;
+  }
+  .glob-hit > .bubbly-arrow {
+    width: 20px;
+    height: 20px;
+    margin-top: 6px;
+  }
+}
+@container (max-height:360px) and (min-width:600px) {
+  .stage-intro {
+    top: 18px;
+    left: 24px;
+  }
+  .stage-intro h1 {
+    font-size: 30px;
+  }
+  .stage-intro > p:last-child {
+    max-width: 175px;
+    font-size: 9px;
+  }
+  .stage-intro .eyebrow {
+    max-width: 170px;
+    font-size: 5px;
+  }
+  .flow-back {
+    top: 12px;
+    left: 18px;
+    padding: 11px 17px;
+    font-size: 9px;
+  }
+  .lava-panel {
+    top: 48px;
+    bottom: 12px;
+    width: min(940px, 84%);
+  }
+  .panel-content {
+    padding: 4px 14px;
+  }
+  .lava-panel h2 {
+    font-size: 27px;
+    line-height: 1.08;
+    margin-bottom: 9px;
+  }
+  .lava-panel .eyebrow {
+    font-size: 6px;
+    margin-bottom: 6px;
+  }
+  .panel-intro,
+  .detail-copy {
+    font-size: 12px;
+    line-height: 1.45;
+    margin-bottom: 9px;
+    max-width: 620px;
+  }
+  .sub-globs {
+    gap: 12px;
+    padding-block: 3px 5px;
+  }
+  .lava-action,
+  .project-globs .lava-action,
+  .about-globs .lava-action,
+  .contact-globs .lava-action,
+  .compact-globs .lava-action {
+    min-height: 76px;
+    padding: 9px;
+  }
+  .action-label {
+    gap: 4px;
+  }
+  .action-label strong,
+  .about-globs .action-label strong {
+    font-size: 17px;
+  }
+  .action-label > svg {
+    width: 19px;
+    height: 19px;
+  }
+  .skill-cloud,
+  .big-cloud {
+    margin-block: 9px;
+    gap: 8px;
+  }
+  .skill-cloud > span,
+  .big-cloud > span {
+    font-size: 12px;
+    padding: 8px 13px;
+  }
+  .email-address {
+    font-size: 13px;
+    margin-bottom: 9px;
+  }
+  .certificate-link img {
+    max-height: 30cqh;
+  }
+  .panel-story .panel-content {
+    display: grid;
+    grid-template-columns: 0.9fr 1.4fr;
+    gap: 6px 22px;
+    text-align: left;
+  }
+  .panel-story .eyebrow {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: end;
+  }
+  .panel-story h2 {
+    grid-column: 1;
+    grid-row: 2 / 4;
+    align-self: start;
+  }
+  .panel-story .detail-copy {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    margin: 0;
+  }
+  .panel-story .secondary-copy {
+    grid-row: 3;
+  }
+}
+/* Short landscape screens have horizontal space: put text beside the choices
+   so labels and body copy keep their normal readable size. */
+@container (max-height:360px) and (min-width:600px) {
+  .panel-projects .panel-content,
+  .panel-contact .panel-content,
+  .panel-anaconda .panel-content,
+  .panel-trivia .panel-content,
+  .panel-github .panel-content {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    align-items: center;
+    gap: 6px 20px;
+  }
+  .panel-projects .eyebrow,
+  .panel-contact .eyebrow,
+  .panel-anaconda .eyebrow,
+  .panel-trivia .eyebrow,
+  .panel-github .eyebrow {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0;
+  }
+  .panel-projects h2,
+  .panel-contact h2,
+  .panel-anaconda h2,
+  .panel-trivia h2,
+  .panel-github h2 {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0;
+  }
+  .panel-projects .panel-intro,
+  .panel-contact .email-address,
+  .panel-anaconda .detail-copy,
+  .panel-trivia .detail-copy,
+  .panel-github .detail-copy {
+    grid-column: 1;
+    grid-row: 3;
+    margin: 0;
+  }
+  .panel-projects .sub-globs,
+  .panel-contact .sub-globs,
+  .panel-anaconda .sub-globs,
+  .panel-trivia .sub-globs,
+  .panel-github .sub-globs {
+    grid-column: 2;
+    grid-row: 1 / 5;
+    padding: 0;
+  }
+  .panel-anaconda .skill-cloud,
+  .panel-trivia .skill-cloud {
+    grid-column: 1;
+    grid-row: 4;
+    margin: 0;
+  }
+  .panel-contact .resume-link {
+    grid-column: 2;
+    grid-row: 5;
+    justify-self: center;
+    font-size: 11px;
+  }
+  .panel-contact .email-address {
+    font-size: 11px;
+    overflow-wrap: anywhere;
+  }
+  .panel-projects .lava-action,
+  .panel-contact .lava-action,
+  .panel-anaconda .lava-action,
+  .panel-trivia .lava-action {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+    min-height: 86px;
+  }
+  .panel-projects .action-label strong,
+  .panel-contact .action-label strong,
+  .panel-anaconda .action-label strong,
+  .panel-trivia .action-label strong {
+    font-size: 15px;
+  }
+  .panel-contact .action-label > svg {
+    width: 20px;
+    height: 20px;
+  }
+  .panel-contact .action-label strong {
+    font-size: 14px;
+  }
+  .panel-projects .action-label > span:not(.sub-index) {
+    font-size: 8px;
+  }
+}

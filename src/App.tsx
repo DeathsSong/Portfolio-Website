@@ -1,8 +1,15 @@
-import { useEffect, useRef, useState, type RefObject } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { FiGithub, FiLinkedin, FiMail, FiPause, FiPlay } from "react-icons/fi";
 import { portfolio, projects } from "./content";
 import certificate from "./assets/general-assembly-certificate.png";
 import "./App.css";
+import "./viewport.css";
 
 type View =
   | "home"
@@ -92,53 +99,87 @@ function useLava(
     const host = stage.current;
     if (!host) return;
     let width = host.clientWidth,
-      height = host.clientHeight,
-      frame = 0,
-      last = 0;
-    const observer = new ResizeObserver(() => {
+      height = host.clientHeight;
+    let frame = 0,
+      last = 0,
+      layoutChanged = true;
+    let introRight = 0,
+      introBottom = 0;
+    const measure = () => {
       width = host.clientWidth;
       height = host.clientHeight;
+      const intro = host.querySelector<HTMLElement>(".stage-intro");
+      introRight = intro ? intro.offsetLeft + intro.offsetWidth + 12 : 0;
+      introBottom = intro ? intro.offsetTop + intro.offsetHeight + 12 : 0;
+      layoutChanged = true;
       if (!motion) {
         cancelAnimationFrame(frame);
         frame = requestAnimationFrame(tick);
       }
-    });
+    };
+    const observer = new ResizeObserver(measure);
     observer.observe(host);
     const tick = (now: number) => {
       const dt = Math.min(now - (last || now - 16), 40);
       last = now;
       const mobile = width < 600;
-      const radius = Math.max(55, Math.min(width * 0.105, height * 0.145, 105));
+      const compact = height < 500;
+      const landscape = width >= 600 && height < 440;
+      const radius = Math.max(
+        compact && mobile ? 42 : 55,
+        Math.min(width * 0.105, height * 0.145, 105),
+      );
+      const shortPortrait = [
+        { x: 0.27, y: 0.56 },
+        { x: 0.73, y: 0.52 },
+        { x: 0.73, y: 0.79 },
+        { x: 0.27, y: 0.82 },
+      ];
+      const shortLandscape = [
+        { x: 0.36, y: 0.58 },
+        { x: 0.56, y: 0.48 },
+        { x: 0.76, y: 0.63 },
+        { x: 0.91, y: 0.38 },
+      ];
       roots.forEach((root, i) => {
         const p = positions.current[i];
-        if (motion && !active && now > p.next) {
-          p.tx = Math.max(
-            0.15,
-            Math.min(
-              0.85,
-              root.x + (Math.random() - 0.5) * (mobile ? 0.22 : 0.36),
-            ),
-          );
-          p.ty = Math.max(
-            0.29,
-            Math.min(0.86, root.y + (Math.random() - 0.5) * 0.28),
-          );
+        const home = landscape
+          ? shortLandscape[i]
+          : compact && mobile
+            ? shortPortrait[i]
+            : root;
+        if (layoutChanged || !motion) {
+          p.tx = home.x;
+          p.ty = home.y;
+          p.next = now + 2000 + Math.random() * 3500;
+        } else if (!active && now > p.next) {
+          const rangeX = landscape
+            ? 0.07
+            : compact
+              ? 0.12
+              : mobile
+                ? 0.22
+                : 0.36;
+          p.tx = home.x + (Math.random() - 0.5) * rangeX;
+          p.ty = home.y + (Math.random() - 0.5) * (compact ? 0.12 : 0.28);
           p.next = now + 4500 + Math.random() * 7500;
         }
+        const marginX = (radius * 1.15 + 12) / width;
+        const marginY = (radius * 1.15 + 12) / height;
         if (!active) {
-          // Leave a calm corner for the introduction, and let wax overlap
-          // without letting two navigation labels occupy the same space.
-          if (p.tx * width - radius < (mobile ? width * 0.75 : 330))
-            p.ty = Math.max(
-              p.ty,
-              Math.min(0.84, ((mobile ? 250 : 270) + radius) / height),
+          p.tx = Math.max(marginX, Math.min(1 - marginX, p.tx));
+          p.ty = Math.max(marginY, Math.min(1 - marginY, p.ty));
+          if (p.tx * width - radius < introRight)
+            p.ty = Math.min(
+              1 - marginY,
+              Math.max(p.ty, (introBottom + radius) / height),
             );
           positions.current.forEach((other, j) => {
             if (i === j || !motion) return;
             const dx = (p.x - other.x) * width,
               dy = (p.y - other.y) * height;
-            const distance = Math.hypot(dx, dy);
-            const gap = radius * 1.6;
+            const distance = Math.hypot(dx, dy),
+              gap = radius * 1.6;
             if (distance > 0 && distance < gap) {
               p.x += ((dx / distance) * (gap - distance) * 0.012) / width;
               p.y += ((dy / distance) * (gap - distance) * 0.012) / height;
@@ -146,30 +187,39 @@ function useLava(
           });
         }
         const isActive = active === root.id;
-        const gx = isActive ? 0.5 : active ? root.x : motion ? p.tx : root.x;
-        const gy = isActive ? 0.54 : active ? root.y : motion ? p.ty : root.y;
-        const follow = motion ? 1 - Math.exp(-dt / (active ? 185 : 2200)) : 1;
+        const gx = isActive ? 0.5 : p.tx;
+        const gy = isActive ? 0.54 : p.ty;
+        const follow =
+          motion && !layoutChanged
+            ? 1 - Math.exp(-dt / (active ? 185 : 2200))
+            : 1;
         p.x += (gx - p.x) * follow;
         p.y += (gy - p.y) * follow;
+        if (!active) {
+          p.x = Math.max(marginX, Math.min(1 - marginX, p.x));
+          p.y = Math.max(marginY, Math.min(1 - marginY, p.y));
+        }
         const t = motion ? now * 0.00055 + root.phase : root.phase;
         const hover = hovered.current === root.id && !active ? 1.1 : 1;
         const goalRx = isActive
-          ? Math.min(width * (mobile ? 0.495 : 0.42), 470) *
+          ? Math.min(width * (mobile ? 0.495 : 0.44), 500) *
             (1 + Math.sin(t) * 0.015)
           : active
             ? 6
             : radius * hover * (i === 3 ? 0.79 : 1) * (1 + Math.sin(t) * 0.12);
         const goalRy = isActive
-          ? height * (mobile ? 0.445 : 0.43) * (1 + Math.cos(t) * 0.015)
+          ? height * 0.45 * (1 + Math.cos(t) * 0.015)
           : active
             ? 7
             : radius *
               hover *
               (i === 3 ? 0.8 : 1) *
               (1 + Math.cos(t * 1.2) * 0.14);
-        const grow = motion ? 1 - Math.exp(-dt / 185) : 1;
-        p.rx += (goalRx - p.rx) * grow;
-        p.ry += (goalRy - p.ry) * grow;
+        const grow = motion && !layoutChanged ? 1 - Math.exp(-dt / 185) : 1;
+        const labelRx = mobile ? (i === 3 ? 42 : compact ? 48 : 56) : 0;
+        const labelRy = mobile ? (i === 3 ? 40 : compact ? 46 : 52) : 0;
+        p.rx += ((active ? goalRx : Math.max(goalRx, labelRx)) - p.rx) * grow;
+        p.ry += ((active ? goalRy : Math.max(goalRy, labelRy)) - p.ry) * grow;
         const shape = host.querySelector(`#wax-${root.id}`);
         shape?.setAttribute("cx", String(p.x * width));
         shape?.setAttribute("cy", String(p.y * height));
@@ -183,6 +233,7 @@ function useLava(
           hit.style.height = `${p.ry * 1.9}px`;
         }
       });
+      layoutChanged = false;
       ambient.forEach((blob, i) => {
         const t = motion ? now * 0.00013 + i * 1.8 : i * 1.8;
         const shape = host.querySelector(`#ambient-${i}`);
@@ -206,12 +257,42 @@ function useLava(
       });
       if (motion) frame = requestAnimationFrame(tick);
     };
-    frame = requestAnimationFrame(tick);
+    measure();
+    if (motion) frame = requestAnimationFrame(tick);
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
     };
   }, [stage, active, motion, hovered]);
+}
+
+function usePanelFit(panel: RefObject<HTMLDivElement | null>, view: View) {
+  useLayoutEffect(() => {
+    const frame = panel.current;
+    const content = frame?.querySelector<HTMLElement>(".panel-content");
+    if (!frame || !content) return;
+    let disposed = false;
+    const fit = () => {
+      if (disposed || !frame.clientWidth || !frame.clientHeight) return;
+      content.style.width = `${frame.clientWidth}px`;
+      content.style.zoom = "1";
+      const scale = Math.min(
+        1,
+        (frame.clientHeight - 4) / Math.max(1, content.offsetHeight),
+      );
+      content.style.zoom = String(scale);
+      frame.dataset.fit = scale.toFixed(3);
+    };
+    const observer = new ResizeObserver(fit);
+    observer.observe(frame);
+    observer.observe(content);
+    fit();
+    document.fonts.ready.then(fit);
+    return () => {
+      disposed = true;
+      observer.disconnect();
+    };
+  }, [panel, view]);
 }
 
 function LavaAction({
@@ -267,6 +348,7 @@ function App() {
   const lastRoot = useRef<string | null>(null);
   const active = rootFor(view);
   useLava(stage, active, motion, hovered);
+  usePanelFit(panel, view);
   useEffect(() => {
     savePreference("michelle-lava-mood", mood);
     savePreference("michelle-motion", motion ? "on" : "off");
@@ -480,222 +562,228 @@ function App() {
                 view === "anaconda" || view === "trivia" ? project.name : view
               }
             >
-              {view === "projects" && (
-                <>
-                  <p className="eyebrow">01 / SELECTED WORK</p>
-                  <h2>
-                    Made of curiosity.
-                    <br />
-                    Built to play.
-                  </h2>
-                  <p className="panel-intro">
-                    A couple of ideas I’ve brought to life.
-                    <br />
-                    Pick a glob and get into it.
-                  </p>
-                  <div className="sub-globs project-globs">
-                    <LavaAction onClick={() => setView("anaconda")}>
-                      <span className="sub-index">01 / BROWSER GAME</span>
-                      <strong>Anaconda</strong>
-                      <span>
-                        One more bite. <BubblyArrow />
-                      </span>
-                    </LavaAction>
-                    <LavaAction onClick={() => setView("trivia")}>
-                      <span className="sub-index">02 / WEB APP</span>
-                      <strong>Trivia Trove</strong>
-                      <span>
-                        Stay curious. <BubblyArrow />
-                      </span>
-                    </LavaAction>
-                  </div>
-                </>
-              )}
-              {(view === "anaconda" || view === "trivia") && (
-                <>
-                  <p className="eyebrow">{project.kind}</p>
-                  <h2>{project.name}</h2>
-                  <p className="detail-copy">{project.description}</p>
-                  <div className="skill-cloud">
-                    {project.tech.map((tech) => (
-                      <span key={tech}>{tech}</span>
-                    ))}
-                  </div>
-                  <div className="sub-globs compact-globs">
-                    <LavaAction href={project.live}>
-                      <BubblyArrow />
-                      <strong>
-                        {view === "anaconda" ? "Play the game" : "Try the app"}
-                      </strong>
-                    </LavaAction>
-                    <LavaAction href={project.source}>
-                      <FiGithub />
-                      <strong>View code</strong>
-                    </LavaAction>
-                  </div>
-                </>
-              )}
-              {view === "about" && (
-                <>
-                  <p className="eyebrow">02 / THE HUMAN IN THE LAMP</p>
-                  <h2>Hi, I’m Michelle.</h2>
-                  <p className="panel-intro">
-                    Full-stack developer. Reno, Nevada.
-                    <br />A little logic, a lot of curiosity.
-                  </p>
-                  <div className="sub-globs about-globs">
-                    <LavaAction onClick={() => setView("story")}>
-                      <strong>My story</strong>
-                      <span>
-                        A little about me <BubblyArrow />
-                      </span>
-                    </LavaAction>
-                    <LavaAction onClick={() => setView("skills")}>
-                      <strong>My toolkit</strong>
-                      <span>
-                        What I build with <BubblyArrow />
-                      </span>
-                    </LavaAction>
-                    <LavaAction onClick={() => setView("education")}>
-                      <strong>Education</strong>
-                      <span>
-                        Where it started <BubblyArrow />
-                      </span>
-                    </LavaAction>
-                    <LavaAction href={portfolio.resume}>
-                      <strong>Résumé</strong>
-                      <span>
-                        View the PDF <BubblyArrow />
-                      </span>
-                    </LavaAction>
-                  </div>
-                </>
-              )}
-              {view === "story" && (
-                <>
-                  <p className="eyebrow">ALWAYS A WORK IN PROGRESS</p>
-                  <h2>
-                    Stay curious.
-                    <br />
-                    Keep growing.
-                  </h2>
-                  <p className="detail-copy">
-                    I’m Michelle Loudenclos, a full-stack developer based in
-                    Reno, Nevada. I like the space where logic meets creativity:
-                    taking an idea, figuring out how it works, and giving it a
-                    little character along the way.
-                  </p>
-                  <p className="detail-copy secondary-copy">
-                    My General Assembly training turned that curiosity into
-                    hands-on experience building for the web. Now I’m putting it
-                    into motion, one project at a time.
-                  </p>
-                </>
-              )}
-              {view === "skills" && (
-                <>
-                  <p className="eyebrow">THE INGREDIENTS</p>
-                  <h2>In my toolkit.</h2>
-                  <p className="panel-intro">
-                    The tools I use to turn “what if” into something you can
-                    click.
-                  </p>
-                  <div className="skill-cloud big-cloud">
-                    {portfolio.skills.map((skill) => (
-                      <span key={skill}>{skill}</span>
-                    ))}
-                  </div>
-                </>
-              )}
-              {view === "education" && (
-                <>
-                  <p className="eyebrow">THE FOUNDATION</p>
-                  <h2>General Assembly</h2>
-                  <p className="panel-intro">
-                    Software Engineering Immersive Remote Flex.
-                    <br />
-                    420 hours of project-based training.
-                  </p>
-                  <a
-                    className="certificate-link"
-                    href={certificate}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src={certificate}
-                      alt="General Assembly software engineering certificate for Michelle Loudenclos"
-                    />
-                    <span>
-                      Open the certificate <BubblyArrow />
-                    </span>
-                  </a>
-                </>
-              )}
-              {view === "contact" && (
-                <>
-                  <p className="eyebrow">03 / GOOD THINGS START WITH A HELLO</p>
-                  <h2>
-                    Let’s make
-                    <br />
-                    something flow.
-                  </h2>
-                  <a
-                    className="email-address"
-                    href={`mailto:${portfolio.email}`}
-                  >
-                    {portfolio.email}
-                  </a>
-                  <div className="sub-globs contact-globs">
-                    <LavaAction href={`mailto:${portfolio.email}`}>
-                      <FiMail />
-                      <strong>Email</strong>
-                    </LavaAction>
-                    <LavaAction href={portfolio.linkedin}>
-                      <FiLinkedin />
-                      <strong>LinkedIn</strong>
-                    </LavaAction>
-                    <LavaAction href={portfolio.github}>
-                      <FiGithub />
-                      <strong>GitHub</strong>
-                    </LavaAction>
-                  </div>
-                  {portfolio.resume && (
+              <div className="panel-content">
+                {view === "projects" && (
+                  <>
+                    <p className="eyebrow">01 / SELECTED WORK</p>
+                    <h2>
+                      Made of curiosity.
+                      <br />
+                      Built to play.
+                    </h2>
+                    <p className="panel-intro">
+                      A couple of ideas I’ve brought to life.
+                      <br />
+                      Pick a glob and get into it.
+                    </p>
+                    <div className="sub-globs project-globs">
+                      <LavaAction onClick={() => setView("anaconda")}>
+                        <span className="sub-index">01 / BROWSER GAME</span>
+                        <strong>Anaconda</strong>
+                        <span>
+                          One more bite. <BubblyArrow />
+                        </span>
+                      </LavaAction>
+                      <LavaAction onClick={() => setView("trivia")}>
+                        <span className="sub-index">02 / WEB APP</span>
+                        <strong>Trivia Trove</strong>
+                        <span>
+                          Stay curious. <BubblyArrow />
+                        </span>
+                      </LavaAction>
+                    </div>
+                  </>
+                )}
+                {(view === "anaconda" || view === "trivia") && (
+                  <>
+                    <p className="eyebrow">{project.kind}</p>
+                    <h2>{project.name}</h2>
+                    <p className="detail-copy">{project.description}</p>
+                    <div className="skill-cloud">
+                      {project.tech.map((tech) => (
+                        <span key={tech}>{tech}</span>
+                      ))}
+                    </div>
+                    <div className="sub-globs compact-globs">
+                      <LavaAction href={project.live}>
+                        <BubblyArrow />
+                        <strong>
+                          {view === "anaconda"
+                            ? "Play the game"
+                            : "Try the app"}
+                        </strong>
+                      </LavaAction>
+                      <LavaAction href={project.source}>
+                        <FiGithub />
+                        <strong>View code</strong>
+                      </LavaAction>
+                    </div>
+                  </>
+                )}
+                {view === "about" && (
+                  <>
+                    <p className="eyebrow">02 / THE HUMAN IN THE LAMP</p>
+                    <h2>Hi, I’m Michelle.</h2>
+                    <p className="panel-intro">
+                      Full-stack developer. Reno, Nevada.
+                      <br />A little logic, a lot of curiosity.
+                    </p>
+                    <div className="sub-globs about-globs">
+                      <LavaAction onClick={() => setView("story")}>
+                        <strong>My story</strong>
+                        <span>
+                          A little about me <BubblyArrow />
+                        </span>
+                      </LavaAction>
+                      <LavaAction onClick={() => setView("skills")}>
+                        <strong>My toolkit</strong>
+                        <span>
+                          What I build with <BubblyArrow />
+                        </span>
+                      </LavaAction>
+                      <LavaAction onClick={() => setView("education")}>
+                        <strong>Education</strong>
+                        <span>
+                          Where it started <BubblyArrow />
+                        </span>
+                      </LavaAction>
+                      <LavaAction href={portfolio.resume}>
+                        <strong>Résumé</strong>
+                        <span>
+                          View the PDF <BubblyArrow />
+                        </span>
+                      </LavaAction>
+                    </div>
+                  </>
+                )}
+                {view === "story" && (
+                  <>
+                    <p className="eyebrow">ALWAYS A WORK IN PROGRESS</p>
+                    <h2>
+                      Stay curious.
+                      <br />
+                      Keep growing.
+                    </h2>
+                    <p className="detail-copy">
+                      I’m Michelle Loudenclos, a full-stack developer based in
+                      Reno, Nevada. I like the space where logic meets
+                      creativity: taking an idea, figuring out how it works, and
+                      giving it a little character along the way.
+                    </p>
+                    <p className="detail-copy secondary-copy">
+                      My General Assembly training turned that curiosity into
+                      hands-on experience building for the web. Now I’m putting
+                      it into motion, one project at a time.
+                    </p>
+                  </>
+                )}
+                {view === "skills" && (
+                  <>
+                    <p className="eyebrow">THE INGREDIENTS</p>
+                    <h2>In my toolkit.</h2>
+                    <p className="panel-intro">
+                      The tools I use to turn “what if” into something you can
+                      click.
+                    </p>
+                    <div className="skill-cloud big-cloud">
+                      {portfolio.skills.map((skill) => (
+                        <span key={skill}>{skill}</span>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {view === "education" && (
+                  <>
+                    <p className="eyebrow">THE FOUNDATION</p>
+                    <h2>General Assembly</h2>
+                    <p className="panel-intro">
+                      Software Engineering Immersive Remote Flex.
+                      <br />
+                      420 hours of project-based training.
+                    </p>
                     <a
-                      className="resume-link"
-                      href={portfolio.resume}
+                      className="certificate-link"
+                      href={certificate}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      My résumé <BubblyArrow />
-                    </a>
-                  )}
-                </>
-              )}
-              {view === "github" && (
-                <>
-                  <p className="eyebrow">BEHIND THE GLOW</p>
-                  <h2>
-                    Open source.
-                    <br />
-                    Open curiosity.
-                  </h2>
-                  <p className="detail-copy">
-                    Take a look around the repositories behind my projects.
-                    You’ll find the code, the experiments, and the things I’m
-                    figuring out along the way.
-                  </p>
-                  <div className="sub-globs compact-globs">
-                    <LavaAction href={portfolio.github}>
-                      <FiGithub />
-                      <strong>DeathsSong</strong>
+                      <img
+                        src={certificate}
+                        alt="General Assembly software engineering certificate for Michelle Loudenclos"
+                      />
                       <span>
-                        Find me on GitHub <BubblyArrow />
+                        Open the certificate <BubblyArrow />
                       </span>
-                    </LavaAction>
-                  </div>
-                </>
-              )}
+                    </a>
+                  </>
+                )}
+                {view === "contact" && (
+                  <>
+                    <p className="eyebrow">
+                      03 / GOOD THINGS START WITH A HELLO
+                    </p>
+                    <h2>
+                      Let’s make
+                      <br />
+                      something flow.
+                    </h2>
+                    <a
+                      className="email-address"
+                      href={`mailto:${portfolio.email}`}
+                    >
+                      {portfolio.email}
+                    </a>
+                    <div className="sub-globs contact-globs">
+                      <LavaAction href={`mailto:${portfolio.email}`}>
+                        <FiMail />
+                        <strong>Email</strong>
+                      </LavaAction>
+                      <LavaAction href={portfolio.linkedin}>
+                        <FiLinkedin />
+                        <strong>LinkedIn</strong>
+                      </LavaAction>
+                      <LavaAction href={portfolio.github}>
+                        <FiGithub />
+                        <strong>GitHub</strong>
+                      </LavaAction>
+                    </div>
+                    {portfolio.resume && (
+                      <a
+                        className="resume-link"
+                        href={portfolio.resume}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        My résumé <BubblyArrow />
+                      </a>
+                    )}
+                  </>
+                )}
+                {view === "github" && (
+                  <>
+                    <p className="eyebrow">BEHIND THE GLOW</p>
+                    <h2>
+                      Open source.
+                      <br />
+                      Open curiosity.
+                    </h2>
+                    <p className="detail-copy">
+                      Take a look around the repositories behind my projects.
+                      You’ll find the code, the experiments, and the things I’m
+                      figuring out along the way.
+                    </p>
+                    <div className="sub-globs compact-globs">
+                      <LavaAction href={portfolio.github}>
+                        <FiGithub />
+                        <strong>DeathsSong</strong>
+                        <span>
+                          Find me on GitHub <BubblyArrow />
+                        </span>
+                      </LavaAction>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </>
         )}

@@ -26,6 +26,7 @@ The existing GitHub Pages workflow supplies `BASE_PATH=/Portfolio-Website/` when
 - Random destinations, smooth interpolation, shape deformation, and SVG metaball filtering make the lava drift and join organically.
 - Clicking a blob expands the same shape into a content surface. Smaller lava choices open project details, personal background, skills, education, and contact links.
 - Back follows the menu hierarchy; Escape does the same. Keyboard focus moves to opened content and returns to the originating blob.
+- The header, lamp, and bottom controls share the live viewport height. Menus reflow on short screens; measured content fitting keeps every control inside the lamp without hiding page overflow or cutting off the bottom.
 - Electric, Sunset, and Cosmic palettes and motion settings persist in browser storage. Reduced-motion preferences are respected by default.
 - The motion switch freezes drifting and deformation. The animation loop stops while motion is off and updates when the stage resizes or the view changes.
 
