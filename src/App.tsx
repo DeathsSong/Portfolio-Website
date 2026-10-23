@@ -145,19 +145,26 @@ function useLava(
     const emitBubbles = (now: number, count: number, pace = 1) => {
       const scale = Math.max(0.62, Math.min(width / 900, height / 600, 1.15));
       const angles = [-2.5, -2.15, -1, -0.65, 0.65, 1, 2.15, 2.5];
+      const settled = pace < 1;
+      const idleArc = settled ? Math.floor(Math.random() * angles.length) : 0;
       for (let i = 0; i < count; i++) {
         const slot = bubbles.findIndex((bubble) => !bubble);
         if (slot < 0) break;
+        const radiusRange = settled
+          ? i % 2 === 0 ? [18, 12] : [32, 20]
+          : [20, 13];
         bubbles[slot] = {
-          born: now + (count > 1 ? i * 22 : 0),
+          born: now + (settled ? i * 180 : count > 1 ? i * 22 : 0),
           life: (2300 + Math.random() * 1100) / pace,
           angle:
             angles[
-              count > 1
+              settled
+                ? (idleArc + i * 3) % angles.length
+                : count > 1
                 ? i % angles.length
                 : Math.floor(Math.random() * angles.length)
             ] + (Math.random() - 0.5) * 0.18,
-          radius: (20 + Math.random() * 13) * scale,
+          radius: (radiusRange[0] + Math.random() * radiusRange[1]) * scale,
           speed: (39 + Math.random() * 23) * scale,
           wobble: Math.random() * Math.PI * 2,
           pace,
@@ -381,7 +388,7 @@ function useLava(
         expansion.released = true;
         nextBubble = now + 6200;
       } else if (active && motion && now >= nextBubble) {
-        emitBubbles(now, 1, 0.3);
+        emitBubbles(now, 2, 0.3);
         nextBubble = now + 5000 + Math.random() * 3000;
       }
       const selected =
