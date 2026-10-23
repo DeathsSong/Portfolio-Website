@@ -879,15 +879,6 @@ function App() {
             >
               <span>{root.label}</span>
               <BubblyArrow />
-              <small>
-                {root.id === "projects"
-                  ? "THINGS I’VE MADE"
-                  : root.id === "about"
-                    ? "THE HUMAN"
-                    : root.id === "contact"
-                      ? "SAY HELLO"
-                      : "EXPLORE THE CODE"}
-              </small>
             </button>
           ))}
         </nav>
@@ -928,18 +919,12 @@ function App() {
                     </p>
                     <div className="sub-globs project-globs">
                       <LavaAction onClick={() => setView("anaconda")}>
-                        <span className="sub-index">01 / BROWSER GAME</span>
                         <strong>Anaconda</strong>
-                        <span>
-                          One more bite. <BubblyArrow />
-                        </span>
+                        <BubblyArrow />
                       </LavaAction>
                       <LavaAction onClick={() => setView("trivia")}>
-                        <span className="sub-index">02 / WEB APP</span>
                         <strong>Trivia Trove</strong>
-                        <span>
-                          Stay curious. <BubblyArrow />
-                        </span>
+                        <BubblyArrow />
                       </LavaAction>
                     </div>
                   </>
@@ -981,27 +966,19 @@ function App() {
                     <div className="sub-globs about-globs">
                       <LavaAction onClick={() => setView("story")}>
                         <strong>My story</strong>
-                        <span>
-                          A little about me <BubblyArrow />
-                        </span>
+                        <BubblyArrow />
                       </LavaAction>
                       <LavaAction onClick={() => setView("skills")}>
                         <strong>My toolkit</strong>
-                        <span>
-                          What I build with <BubblyArrow />
-                        </span>
+                        <BubblyArrow />
                       </LavaAction>
                       <LavaAction onClick={() => setView("education")}>
                         <strong>Education</strong>
-                        <span>
-                          Where it started <BubblyArrow />
-                        </span>
+                        <BubblyArrow />
                       </LavaAction>
                       <LavaAction href={portfolio.resume}>
                         <strong>Résumé</strong>
-                        <span>
-                          View the PDF <BubblyArrow />
-                        </span>
+                        <BubblyArrow />
                       </LavaAction>
                     </div>
                   </>
@@ -1116,9 +1093,6 @@ function App() {
                       <LavaAction href={portfolio.github}>
                         <FiGithub />
                         <strong>DeathsSong</strong>
-                        <span>
-                          Find me on GitHub <BubblyArrow />
-                        </span>
                       </LavaAction>
                     </div>
                   </>
