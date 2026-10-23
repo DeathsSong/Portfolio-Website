@@ -176,17 +176,11 @@
     min-height: 95px;
     padding: 12px 7px;
   }
-  .contact-globs {
-    flex-wrap: nowrap;
-  }
   .contact-globs .lava-action {
     flex: 1;
     min-width: 0;
     min-height: 90px;
     padding: 10px 5px;
-  }
-  .contact-globs .lava-action:last-child {
-    margin-top: 0;
   }
   .contact-globs .action-label strong {
     font-size: 16px;
@@ -203,10 +197,6 @@
   .big-cloud > span {
     font-size: 14px;
     padding: 12px 17px;
-  }
-  .email-address {
-    font-size: 13px;
-    margin-bottom: 14px;
   }
   .certificate-link img {
     max-height: 30cqh;
@@ -306,10 +296,6 @@
     font-size: 12px;
     padding: 8px 13px;
   }
-  .email-address {
-    font-size: 13px;
-    margin-bottom: 9px;
-  }
   .certificate-link img {
     max-height: 30cqh;
   }
@@ -370,7 +356,6 @@
     margin: 0;
   }
   .panel-projects .panel-intro,
-  .panel-contact .email-address,
   .panel-anaconda .detail-copy,
   .panel-trivia .detail-copy,
   .panel-github .detail-copy {
@@ -393,15 +378,10 @@
     grid-row: 4;
     margin: 0;
   }
-  .panel-contact .resume-link {
-    grid-column: 2;
-    grid-row: 5;
-    justify-self: center;
-    font-size: 11px;
-  }
-  .panel-contact .email-address {
-    font-size: 11px;
-    overflow-wrap: anywhere;
+  .panel-contact .contact-globs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: none;
+    gap: 12px;
   }
   .panel-projects .lava-action,
   .panel-contact .lava-action,
@@ -424,6 +404,9 @@
   }
   .panel-contact .action-label strong {
     font-size: 14px;
+  }
+  .panel-contact .lava-action {
+    min-height: 76px;
   }
   .panel-projects .action-label > span:not(.sub-index) {
     font-size: 8px;

@@ -5,7 +5,7 @@ import {
   useState,
   type RefObject,
 } from "react";
-import { FiGithub, FiLinkedin, FiMail, FiPause, FiPlay } from "react-icons/fi";
+import { FiFileText, FiGithub, FiLinkedin, FiMail, FiPause, FiPlay } from "react-icons/fi";
 import { portfolio, projects } from "./content";
 import { lavaOutline } from "./lava-shape";
 import certificate from "./assets/general-assembly-certificate.png";
@@ -1076,12 +1076,6 @@ function App() {
                       <br />
                       something flow.
                     </h2>
-                    <a
-                      className="email-address"
-                      href={`mailto:${portfolio.email}`}
-                    >
-                      {portfolio.email}
-                    </a>
                     <div className="sub-globs contact-globs">
                       <LavaAction href={`mailto:${portfolio.email}`}>
                         <FiMail />
@@ -1095,17 +1089,13 @@ function App() {
                         <FiGithub />
                         <strong>GitHub</strong>
                       </LavaAction>
+                      {portfolio.resume && (
+                        <LavaAction href={portfolio.resume}>
+                          <FiFileText />
+                          <strong>Résumé</strong>
+                        </LavaAction>
+                      )}
                     </div>
-                    {portfolio.resume && (
-                      <a
-                        className="resume-link"
-                        href={portfolio.resume}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        My résumé <BubblyArrow />
-                      </a>
-                    )}
                   </>
                 )}
                 {view === "github" && (
