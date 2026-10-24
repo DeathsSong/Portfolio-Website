@@ -242,12 +242,14 @@
   text-align: center;
 }
 .glob-hit > span {
+  flex: none;
   font-family: "Shrikhand", Georgia, serif;
   font-size: clamp(19px, 2.1vw, 29px);
   white-space: nowrap;
   letter-spacing: -0.8px;
 }
 .glob-hit > svg {
+  flex: none;
   width: 19px;
   height: 19px;
   margin-top: 9px;

@@ -129,6 +129,16 @@ function useLava(
       layoutChanged = true;
     let introRight = 0,
       introBottom = 0;
+    let disposed = false;
+    const navigation = roots.map((root) =>
+      host.querySelector<HTMLButtonElement>(`#hit-${root.id}`),
+    );
+    let labelBounds = roots.map(() => ({ radius: 0, points: [] as InkPoint[] }));
+    const labelCover = (index: number, rx: number, ry: number) =>
+      labelBounds[index].points.reduce(
+        (cover, point) => Math.max(cover, Math.hypot(point.x / rx, point.y / ry)),
+        1,
+      );
     let previousActive = activeRef.current;
     let expansion: {
       start: number;
@@ -181,6 +191,28 @@ function useLava(
       const intro = host.querySelector<HTMLElement>(".stage-intro");
       introRight = intro ? intro.offsetLeft + intro.offsetWidth + 12 : 0;
       introBottom = intro ? intro.offsetTop + intro.offsetHeight + 12 : 0;
+      // Cache the real label and arrow bounds rather than guessing from the
+      // screen size. Padding also protects the display font's italic overhang.
+      labelBounds = navigation.map((hit) => {
+        const points: InkPoint[] = [];
+        if (hit) {
+          const button = hit.getBoundingClientRect();
+          const cx = button.left + button.width / 2;
+          const cy = button.top + button.height / 2;
+          for (const child of hit.children) {
+            const bounds = child.getBoundingClientRect();
+            for (const x of [bounds.left, bounds.right]) {
+              for (const y of [bounds.top, bounds.bottom]) {
+                points.push({ x: Math.abs(x - cx) + 10, y: Math.abs(y - cy) + 10 });
+              }
+            }
+          }
+        }
+        return {
+          radius: points.reduce((radius, point) => Math.max(radius, Math.hypot(point.x, point.y)), 0),
+          points,
+        };
+      });
       layoutChanged = true;
       if (!motion) {
         cancelAnimationFrame(frame);
@@ -189,6 +221,9 @@ function useLava(
     };
     const observer = new ResizeObserver(measure);
     observer.observe(host);
+    navigation.forEach((hit) => {
+      if (hit) for (const child of hit.children) observer.observe(child);
+    });
     const tick = (now: number) => {
       const active = activeRef.current;
       const dt = Math.min(now - (last || now - 16), 40);
@@ -264,15 +299,16 @@ function useLava(
           p.ty = home.y + (Math.random() - 0.5) * (compact ? 0.12 : 0.28);
           p.next = now + 4500 + Math.random() * 7500;
         }
-        const marginX = (radius * 1.15 + 12) / width;
-        const marginY = (radius * 1.15 + 12) / height;
+        const safeRadius = Math.max(radius * 1.15, labelBounds[i].radius);
+        const marginX = (safeRadius + 12) / width;
+        const marginY = (safeRadius + 12) / height;
         if (!active) {
           p.tx = Math.max(marginX, Math.min(1 - marginX, p.tx));
           p.ty = Math.max(marginY, Math.min(1 - marginY, p.ty));
-          if (p.tx * width - radius < introRight)
+          if (p.tx * width - safeRadius < introRight)
             p.ty = Math.min(
               1 - marginY,
-              Math.max(p.ty, (introBottom + radius) / height),
+              Math.max(p.ty, (introBottom + safeRadius) / height),
             );
           positions.current.forEach((other, j) => {
             if (i === j || !motion) return;
@@ -322,7 +358,11 @@ function useLava(
               hover *
               (i === 3 ? 0.8 : 1) *
               (1 + Math.cos(t * 1.2) * 0.14);
-        if (isActive) {
+        if (!active) {
+          const cover = labelCover(i, goalRx, goalRy);
+          goalRx *= cover;
+          goalRy *= cover;
+        } else if (isActive) {
           // Protect every text line with a small margin, even in short views.
           const safeScale = ink.current.reduce(
             (safe, point) =>
@@ -339,8 +379,6 @@ function useLava(
           goalRy *= safeScale;
         }
         const grow = motion && !layoutChanged ? 1 - Math.exp(-dt / 185) : 1;
-        const labelRx = mobile ? (i === 3 ? 42 : compact ? 48 : 56) : 0;
-        const labelRy = mobile ? (i === 3 ? 40 : compact ? 46 : 52) : 0;
         if (opening) {
           const swell =
             progress > 0.6
@@ -351,8 +389,15 @@ function useLava(
           p.ry =
             (opening.ry + (goalRy - opening.ry) * eased) * (1 - swell * 0.018);
         } else {
-          p.rx += ((active ? goalRx : Math.max(goalRx, labelRx)) - p.rx) * grow;
-          p.ry += ((active ? goalRy : Math.max(goalRy, labelRy)) - p.ry) * grow;
+          p.rx += (goalRx - p.rx) * grow;
+          p.ry += (goalRy - p.ry) * grow;
+        }
+        if (!active) {
+          // Enforce coverage on the rendered shape too, including the first
+          // frame after returning from an expanded blob.
+          const cover = labelCover(i, p.rx, p.ry);
+          p.rx *= cover;
+          p.ry *= cover;
         }
         if (isActive && (!opening || progress >= 0.65)) {
           const cover = ink.current.reduce(
@@ -508,8 +553,12 @@ function useLava(
       }
     };
     measure();
+    document.fonts.ready.then(() => {
+      if (!disposed) measure();
+    });
     if (motion) frame = requestAnimationFrame(tick);
     return () => {
+      disposed = true;
       cancelAnimationFrame(frame);
       observer.disconnect();
       requestDraw.current = () => {};
