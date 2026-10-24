@@ -1092,10 +1092,10 @@ function App() {
                       ))}
                     </div>
                     <p className="panel-intro toolkit-note">
-                      I use AI tools to brainstorm ideas, work through coding
-                      challenges, and refine designs. I guide the process with
-                      clear prompts, specific feedback, and careful review of the
-                      results.
+                      I build websites and games with React, JavaScript, and a
+                      mix of web tools. I enjoy solving problems, experimenting
+                      with design, and learning as I go, with AI lending a hand
+                      for brainstorming and troubleshooting.
                     </p>
                   </>
                 )}
