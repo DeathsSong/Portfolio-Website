@@ -306,16 +306,6 @@
   border-radius: 50%;
   box-shadow: 0 0 10px var(--wax);
 }
-.tank-mark {
-  position: absolute;
-  right: 24px;
-  bottom: 25px;
-  font-size: 6px;
-  letter-spacing: 1.6px;
-  color: #94b2ac;
-  z-index: 3;
-  writing-mode: vertical-rl;
-}
 .flow-back {
   position: absolute;
   top: 25px;
@@ -806,11 +796,6 @@
     letter-spacing: 0.8px;
     bottom: 23px;
     gap: 7px;
-  }
-  .tank-mark {
-    right: 14px;
-    bottom: 23px;
-    font-size: 5px;
   }
   .flow-back {
     top: 16px;

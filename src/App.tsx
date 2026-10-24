@@ -8,6 +8,7 @@ import {
 import { FiFileText, FiGithub, FiLinkedin, FiMail, FiPause, FiPlay } from "react-icons/fi";
 import { portfolio, projects } from "./content";
 import { lavaOutline } from "./lava-shape";
+import { createLavaPool, poolSlots } from "./lava-pool";
 import certificate from "./assets/general-assembly-certificate.png";
 import "./App.css";
 import "./viewport.css";
@@ -101,6 +102,7 @@ function useLava(
 ) {
   const activeRef = useRef(active);
   const requestDraw = useRef(() => {});
+  const pool = useRef<ReturnType<typeof createLavaPool> | null>(null);
   useLayoutEffect(() => {
     activeRef.current = active;
     requestDraw.current();
@@ -119,6 +121,7 @@ function useLava(
   useEffect(() => {
     const host = stage.current;
     if (!host) return;
+    pool.current ??= createLavaPool(host);
     let width = host.clientWidth,
       height = host.clientHeight;
     let frame = 0,
@@ -190,6 +193,7 @@ function useLava(
       const active = activeRef.current;
       const dt = Math.min(now - (last || now - 16), 40);
       last = now;
+      pool.current?.(now, width, height, motion);
       if (active !== previousActive) {
         const selected =
           positions.current[roots.findIndex((root) => root.id === active)];
@@ -803,6 +807,18 @@ function App() {
             fill="url(#molten)"
             filter="url(#liquid-goo)"
           >
+            <path id="lava-pool" d="" />
+            {poolSlots.map((i) => (
+              <ellipse
+                id={`pool-goop-${i}`}
+                key={`pool-goop-${i}`}
+                className="pool-goop"
+                cx="0"
+                cy="0"
+                rx="0"
+                ry="0"
+              />
+            ))}
             {ambient.map((_, i) => (
               <ellipse
                 id={`ambient-${i}`}
@@ -1108,9 +1124,6 @@ function App() {
           <span className="tiny-orbit" /> NOTHING HERE STAYS STILL. NEITHER DO
           IDEAS.
         </div>
-        <span className="tank-mark" aria-hidden="true">
-          ML / NO. 001
-        </span>
       </main>
       <footer className="world-footer">
         <span className="footer-instruction">

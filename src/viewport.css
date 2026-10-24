@@ -215,8 +215,7 @@
   }
 }
 @container (max-height:440px) {
-  .stage-caption,
-  .tank-mark {
+  .stage-caption {
     display: none;
   }
   .glob-hit > small {
