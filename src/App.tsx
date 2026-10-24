@@ -1063,7 +1063,7 @@ function App() {
                 {view === "contact" && (
                   <>
                     <p className="eyebrow">
-                      03 / GOOD THINGS START WITH A HELLO
+                      GOOD THINGS START WITH A HELLO
                     </p>
                     <h2>
                       Let’s make
