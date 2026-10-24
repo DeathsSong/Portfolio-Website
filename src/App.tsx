@@ -1086,15 +1086,17 @@ function App() {
                   <>
                     <p className="eyebrow">THE INGREDIENTS</p>
                     <h2>In my toolkit.</h2>
-                    <p className="panel-intro">
-                      The tools I use to turn “what if” into something you can
-                      click.
-                    </p>
                     <div className="skill-cloud big-cloud">
                       {portfolio.skills.map((skill) => (
                         <span key={skill}>{skill}</span>
                       ))}
                     </div>
+                    <p className="panel-intro toolkit-note">
+                      I use AI tools to brainstorm ideas, work through coding
+                      challenges, and refine designs. I guide the process with
+                      clear prompts, specific feedback, and careful review of the
+                      results.
+                    </p>
                   </>
                 )}
                 {view === "education" && (

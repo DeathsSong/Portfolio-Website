@@ -85,6 +85,9 @@
 .story-copy .detail-copy:last-child {
   margin-bottom: 0;
 }
+.toolkit-note {
+  margin-bottom: 0;
+}
 .certificate-link img {
   max-height: min(220px, 34cqh);
 }

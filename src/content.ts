@@ -11,6 +11,7 @@ export const portfolio = {
     "HTML & CSS",
     "REST APIs",
     "Git & GitHub",
+    "AI-assisted development",
   ],
 };
 export const projects = [
