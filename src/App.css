@@ -26,10 +26,10 @@
   --water: #322656;
   --water-deep: #151c37;
   --water-light: #5f4d94;
-  --wax: #d798e2;
-  --wax-core: #ffd2ee;
-  --wax-edge: #a968ca;
-  --wax-ink: #48275f;
+  --wax: #ac78ef;
+  --wax-core: #d8bbff;
+  --wax-edge: #9863de;
+  --wax-ink: #180b2e;
 }
 .lava-world[data-mood="yellow"] {
   --water: #223c60;
@@ -580,7 +580,7 @@
   background: #ffa071;
 }
 .palette-cosmic > span {
-  background: #d59bdf;
+  background: #ac78ef;
 }
 .palette-yellow > span {
   background: #f5d847;
