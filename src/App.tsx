@@ -1007,17 +1007,30 @@ function App() {
                       <br />
                       Keep growing.
                     </h2>
-                    <p className="detail-copy">
-                      I’m Michelle Loudenclos, a full-stack developer based in
-                      Reno, Nevada. I like the space where logic meets
-                      creativity: taking an idea, figuring out how it works, and
-                      giving it a little character along the way.
-                    </p>
-                    <p className="detail-copy secondary-copy">
-                      My General Assembly training turned that curiosity into
-                      hands-on experience building for the web. Now I’m putting
-                      it into motion, one project at a time.
-                    </p>
+                    <div className="story-copy">
+                      <p className="detail-copy">
+                        My brother and I grew up around computers, taking toys
+                        apart to see how they worked. Years later, an old, broken
+                        3D printer gave that curiosity a new direction. I spent
+                        hours digging through Google, Reddit, and YouTube,
+                        piecing together information and code changes until it
+                        finally ran. Watching it work was incredible. I wanted
+                        more of that feeling.
+                      </p>
+                      <p className="detail-copy">
+                        That same drive is what I bring to coding: when
+                        something’s broken, or there’s an idea I want to bring to
+                        life, I dig in. I love building games because I’m a gamer
+                        with plenty of ideas I haven’t found anywhere else.
+                      </p>
+                      <p className="detail-copy">
+                        After training at General Assembly, I’m excited to put my
+                        skills to work in my first software development role and
+                        keep learning alongside a team. Away from code, I’m
+                        usually playing video games, spending time with my dogs,
+                        or trying another creative project.
+                      </p>
+                    </div>
                   </>
                 )}
                 {view === "skills" && (
