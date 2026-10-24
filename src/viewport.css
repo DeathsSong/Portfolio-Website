@@ -85,6 +85,28 @@
 .story-copy .detail-copy:last-child {
   margin-bottom: 0;
 }
+.story-pagination {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+.story-pagination .lava-action {
+  width: 90px;
+  min-height: 44px;
+  padding: 10px;
+}
+.story-pagination .action-label strong {
+  font-size: 14px;
+}
+.story-pagination .lava-action:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.story-pagination > span {
+  font-size: 11px;
+}
 .toolkit-note {
   margin-bottom: 0;
 }
@@ -100,6 +122,19 @@
   100% {
     opacity: 1;
     transform: none;
+  }
+}
+/* Keep each paragraph at its normal size on short, narrow phones. */
+@container (max-width:440px) and (max-height:580px) {
+  .story-copy .detail-copy {
+    display: none;
+    margin-bottom: 0;
+  }
+  .story-copy .detail-copy[data-active="true"] {
+    display: block;
+  }
+  .story-pagination {
+    display: flex;
   }
 }
 @media (max-width: 600px) {

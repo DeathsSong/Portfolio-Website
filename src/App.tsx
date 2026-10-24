@@ -569,7 +569,7 @@ function useLava(
 
 function usePanelFit(
   panel: RefObject<HTMLDivElement | null>,
-  view: View,
+  contentKey: string,
   stage: RefObject<HTMLDivElement | null>,
   ink: RefObject<InkPoint[]>,
   redraw: RefObject<() => void>,
@@ -664,7 +664,7 @@ function usePanelFit(
       disposed = true;
       observer.disconnect();
     };
-  }, [panel, view, stage, ink, redraw]);
+  }, [panel, contentKey, stage, ink, redraw]);
 }
 
 function LavaAction({
@@ -672,11 +672,13 @@ function LavaAction({
   onClick,
   href,
   className = "",
+  disabled = false,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   href?: string;
   className?: string;
+  disabled?: boolean;
 }) {
   const content = (
     <>
@@ -708,7 +710,7 @@ function LavaAction({
       {content}
     </a>
   ) : (
-    <button className={`lava-action ${className}`} onClick={onClick}>
+    <button className={`lava-action ${className}`} onClick={onClick} disabled={disabled}>
       {content}
     </button>
   );
@@ -716,6 +718,7 @@ function LavaAction({
 
 function App() {
   const [view, setView] = useState<View>("home");
+  const [storyPage, setStoryPage] = useState(0);
   const [mood, setMood] = useState<Mood>(() => {
     const saved = preference("michelle-lava-mood");
     return moods.includes(saved as Mood)
@@ -735,7 +738,7 @@ function App() {
   const ink = useRef<InkPoint[]>([]);
   const active = rootFor(view);
   const redrawLava = useLava(stage, active, motion, hovered, ink);
-  usePanelFit(panel, view, stage, ink, redrawLava);
+  usePanelFit(panel, `${view}-${storyPage}`, stage, ink, redrawLava);
   useEffect(() => {
     savePreference("michelle-lava-mood", mood);
     savePreference("michelle-motion", motion ? "on" : "off");
@@ -1025,11 +1028,14 @@ function App() {
                     <p className="eyebrow">02 / THE HUMAN IN THE LAMP</p>
                     <h2>Hi, I’m Michelle.</h2>
                     <p className="panel-intro">
-                      Full-stack developer. Reno, Nevada.
-                      <br />A little logic, a lot of curiosity.
+                      Full-stack developer in Reno, Nevada.
+                      <br />I like figuring things out and making them work.
                     </p>
                     <div className="sub-globs about-globs">
-                      <LavaAction onClick={() => setView("story")}>
+                      <LavaAction onClick={() => {
+                        setStoryPage(0);
+                        setView("story");
+                      }}>
                         <strong>My story</strong>
                         <BubblyArrow />
                       </LavaAction>
@@ -1050,36 +1056,51 @@ function App() {
                 )}
                 {view === "story" && (
                   <>
-                    <p className="eyebrow">ALWAYS A WORK IN PROGRESS</p>
+                    <p className="eyebrow">THE STORY SO FAR</p>
                     <h2>
                       Stay curious.
                       <br />
-                      Keep growing.
+                      Keep building.
                     </h2>
-                    <div className="story-copy">
-                      <p className="detail-copy">
-                        My brother and I grew up around computers, taking toys
-                        apart to see how they worked. Years later, an old, broken
-                        3D printer gave that curiosity a new direction. I spent
-                        hours digging through Google, Reddit, and YouTube,
-                        piecing together information and code changes until it
-                        finally ran. Watching it work was incredible. I wanted
-                        more of that feeling.
+                    <div className="story-copy" aria-live="polite" aria-atomic="true">
+                      <p className="detail-copy" data-active={storyPage === 0}>
+                        My interest in coding clicked when I brought an old,
+                        broken 3D printer back to life. After hours of digging
+                        through Google, Reddit, and YouTube, I pieced together
+                        the information and code changes it needed. When it
+                        finally ran, I was hooked.
                       </p>
-                      <p className="detail-copy">
-                        That same drive is what I bring to coding: when
-                        something’s broken, or there’s an idea I want to bring to
-                        life, I dig in. I love building games because I’m a gamer
-                        with plenty of ideas I haven’t found anywhere else.
+                      <p className="detail-copy" data-active={storyPage === 1}>
+                        My brother and I grew up around computers and took toys
+                        apart to see how they worked. That curiosity still shapes
+                        how I tackle problems: dig in, try things, and keep going.
+                        As a gamer, I love using code to make the games I wish
+                        existed.
                       </p>
-                      <p className="detail-copy">
-                        After training at General Assembly, I’m excited to put my
-                        skills to work in my first software development role and
-                        keep learning alongside a team. Away from code, I’m
-                        usually playing video games, spending time with my dogs,
-                        or trying another creative project.
+                      <p className="detail-copy" data-active={storyPage === 2}>
+                        General Assembly helped me turn that curiosity into
+                        practical development skills. I’m excited to bring those
+                        skills to my first developer role and keep learning with
+                        a team. Outside of coding, you’ll find me playing video
+                        games, spending time with my dogs, or trying another
+                        creative project.
                       </p>
                     </div>
+                    <nav className="story-pagination" aria-label="Story paragraphs">
+                      <LavaAction
+                        disabled={storyPage === 0}
+                        onClick={() => setStoryPage((page) => Math.max(0, page - 1))}
+                      >
+                        <strong>Previous</strong>
+                      </LavaAction>
+                      <span>{storyPage + 1} of 3</span>
+                      <LavaAction
+                        disabled={storyPage === 2}
+                        onClick={() => setStoryPage((page) => Math.min(2, page + 1))}
+                      >
+                        <strong>Next</strong>
+                      </LavaAction>
+                    </nav>
                   </>
                 )}
                 {view === "skills" && (
