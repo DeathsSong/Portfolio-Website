@@ -1025,11 +1025,12 @@ function App() {
                 )}
                 {view === "about" && (
                   <>
-                    <p className="eyebrow">02 / THE HUMAN IN THE LAMP</p>
+                    <p className="eyebrow">ABOUT ME</p>
                     <h2>Hi, I’m Michelle.</h2>
                     <p className="panel-intro">
-                      Full-stack developer in Reno, Nevada.
-                      <br />I like figuring things out and making them work.
+                      I’m a full-stack developer in Reno, Nevada. I like making
+                      games, trying new projects, and figuring out how things
+                      work.
                     </p>
                     <div className="sub-globs about-globs">
                       <LavaAction onClick={() => {
@@ -1056,34 +1057,27 @@ function App() {
                 )}
                 {view === "story" && (
                   <>
-                    <p className="eyebrow">THE STORY SO FAR</p>
-                    <h2>
-                      Stay curious.
-                      <br />
-                      Keep building.
-                    </h2>
+                    <p className="eyebrow">MY STORY</p>
+                    <h2>How I got here.</h2>
                     <div className="story-copy" aria-live="polite" aria-atomic="true">
                       <p className="detail-copy" data-active={storyPage === 0}>
-                        My interest in coding clicked when I brought an old,
-                        broken 3D printer back to life. After hours of digging
-                        through Google, Reddit, and YouTube, I pieced together
-                        the information and code changes it needed. When it
-                        finally ran, I was hooked.
+                        My brother and I grew up around computers, and we were
+                        the kids who took toys apart just to see how they worked.
+                        I love video games, and I have plenty of ideas for games
+                        I want to make.
                       </p>
                       <p className="detail-copy" data-active={storyPage === 1}>
-                        My brother and I grew up around computers and took toys
-                        apart to see how they worked. That curiosity still shapes
-                        how I tackle problems: dig in, try things, and keep going.
-                        As a gamer, I love using code to make the games I wish
-                        existed.
+                        I got into coding while trying to fix an old, broken 3D
+                        printer. I spent hours searching Google, Reddit, and
+                        YouTube, piecing together information and code snippets
+                        until I got it running again. Seeing it finally work felt
+                        incredible.
                       </p>
                       <p className="detail-copy" data-active={storyPage === 2}>
-                        General Assembly helped me turn that curiosity into
-                        practical development skills. I’m excited to bring those
-                        skills to my first developer role and keep learning with
-                        a team. Outside of coding, you’ll find me playing video
-                        games, spending time with my dogs, or trying another
-                        creative project.
+                        I trained at General Assembly and am looking for my first
+                        developer role. I’m excited to put what I’ve learned to
+                        work. When I’m not coding or playing games, I’m usually
+                        with my dogs or trying out another project.
                       </p>
                     </div>
                     <nav className="story-pagination" aria-label="Story paragraphs">
