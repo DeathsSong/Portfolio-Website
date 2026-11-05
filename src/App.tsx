@@ -1061,23 +1061,26 @@ function App() {
                     <h2>How I got here.</h2>
                     <div className="story-copy" aria-live="polite" aria-atomic="true">
                       <p className="detail-copy" data-active={storyPage === 0}>
-                        My brother and I grew up around computers, and we were
-                        the kids who took toys apart just to see how they worked.
-                        I love video games, and I have plenty of ideas for games
-                        I want to make.
+                        I’m a full-stack developer based in Reno, Nevada, with
+                        software engineering training from General Assembly. I
+                        enjoy projects that combine creative thinking with the
+                        patience to work through a challenging problem.
                       </p>
                       <p className="detail-copy" data-active={storyPage === 1}>
-                        I got into coding while trying to fix an old, broken 3D
-                        printer. I spent hours searching Google, Reddit, and
-                        YouTube, piecing together information and code snippets
-                        until I got it running again. Seeing it finally work felt
-                        incredible.
+                        Repairing an old 3D printer helped me discover how
+                        rewarding that work could be. Getting it running again
+                        took hours of research, experimentation, and code changes.
+                        The satisfaction of solving it gave me a reason to keep
+                        learning and eventually pursue software development as a
+                        career.
                       </p>
                       <p className="detail-copy" data-active={storyPage === 2}>
-                        I trained at General Assembly and am looking for my first
-                        developer role. I’m excited to put what I’ve learned to
-                        work. When I’m not coding or playing games, I’m usually
-                        with my dogs or trying out another project.
+                        I’m particularly interested in game development, where I
+                        can turn my enthusiasm as a player into something I’ve
+                        created. I’m looking for my first developer role and an
+                        opportunity to contribute that same persistence and
+                        imagination. Outside of coding, I spend time with my dogs,
+                        play games, and explore a variety of personal projects.
                       </p>
                     </div>
                     <nav className="story-pagination" aria-label="Story paragraphs">
